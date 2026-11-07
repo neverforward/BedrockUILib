@@ -28,6 +28,7 @@ public:
         float         boxWidth;
         float         size;
         bul::Align    align;
+        bul::Rgba     color;
     };
 
     std::vector<Fill>   fills;
@@ -37,9 +38,9 @@ public:
 
     void fill(bul::Rect const& rect, bul::Rgba color, float alpha) override { fills.push_back({rect, color, alpha}); }
     void outline(bul::Rect const& rect, bul::Rgba, float) override { strokes.push_back({rect}); }
-    void text(std::string_view value, bul::Point topLeft, float boxWidth, bul::Rgba, float size, bul::Align align)
+    void text(std::string_view value, bul::Point topLeft, float boxWidth, bul::Rgba color, float size, bul::Align align)
         override {
-        texts.push_back({std::string{value}, topLeft, boxWidth, size, align});
+        texts.push_back({std::string{value}, topLeft, boxWidth, size, align, color});
     }
     [[nodiscard]] float textWidth(std::string_view value, float size) const override {
         return static_cast<float>(value.size()) * 6.f * size;
@@ -67,13 +68,76 @@ TEST(WidgetLayout, labelMeasuresText) {
     EXPECT_FLOAT_EQ(size.height, 9.f);
 }
 
-TEST(WidgetLayout, buttonAddsPadding) {
+TEST(WidgetLayout, buttonUsesSizeProfile) {
     FakeCanvas canvas;
     bul::Theme theme = testTheme();
-    bul::Button button{"ok"};
-    bul::Size   size = button.measure(100.f, theme, canvas);
-    EXPECT_FLOAT_EQ(size.width, 12.f + 8.f);
-    EXPECT_FLOAT_EQ(size.height, 9.f + 4.f);
+
+    // Default: 10 px horizontal padding, 5 px vertical padding around one line.
+    bul::Button standard{"ok"};
+    bul::Size   size = standard.measure(100.f, theme, canvas);
+    EXPECT_FLOAT_EQ(size.width, 12.f + 20.f);
+    EXPECT_FLOAT_EQ(size.height, 9.f + 10.f);
+
+    bul::Button tiny{"ok"};
+    tiny.size(bul::Button::Size::XSmall);
+    bul::Size const tinySize = tiny.measure(100.f, theme, canvas);
+    EXPECT_FLOAT_EQ(tinySize.width, 9.6f + 12.f);
+    EXPECT_FLOAT_EQ(tinySize.height, 7.2f + 2.f);
+
+    bul::Button large{"ok"};
+    large.size(bul::Button::Size::Large);
+    bul::Size const largeSize = large.measure(100.f, theme, canvas);
+    EXPECT_FLOAT_EQ(largeSize.width, 13.8f + 28.f);
+
+    EXPECT_LT(tinySize.height, size.height);
+    EXPECT_LT(size.height, largeSize.height);
+}
+
+TEST(WidgetLayout, buttonTypesChooseSurface) {
+    FakeCanvas canvas;
+    bul::Theme theme = testTheme();
+
+    bul::Button outline{"ok"};
+    outline.type(bul::Button::Type::Outline);
+    outline.layout({0.f, 0.f, 40.f, 20.f}, theme, canvas);
+    outline.paint(canvas, theme);
+    EXPECT_EQ(canvas.fills.size(), 0u); // transparent until hovered
+
+    FakeCanvas linkCanvas;
+    bul::Button link{"ok"};
+    link.type(bul::Button::Type::Link);
+    link.layout({0.f, 0.f, 40.f, 20.f}, theme, linkCanvas);
+    link.paint(linkCanvas, theme);
+    EXPECT_EQ(linkCanvas.fills.size(), 0u);
+    EXPECT_EQ(linkCanvas.strokes.size(), 0u); // text only
+
+    FakeCanvas destructiveCanvas;
+    bul::Button destructive{"ok"};
+    destructive.type(bul::Button::Type::Destructive);
+    destructive.layout({0.f, 0.f, 40.f, 20.f}, theme, destructiveCanvas);
+    destructive.paint(destructiveCanvas, theme);
+    ASSERT_EQ(destructiveCanvas.fills.size(), 1u);
+    EXPECT_EQ(destructiveCanvas.fills[0].color, theme.destructive);
+
+    FakeCanvas secondaryCanvas;
+    bul::Button secondary{"ok"};
+    secondary.type(bul::Button::Type::Secondary);
+    secondary.layout({0.f, 0.f, 40.f, 20.f}, theme, secondaryCanvas);
+    secondary.paint(secondaryCanvas, theme);
+    ASSERT_EQ(secondaryCanvas.fills.size(), 1u);
+    EXPECT_EQ(secondaryCanvas.fills[0].color, theme.secondary);
+
+    // Default is the primary action: a filled primary surface with its own text
+    // colour, so it cannot be confused with the quiet secondary one.
+    FakeCanvas primaryCanvas;
+    bul::Button standard{"ok"};
+    standard.layout({0.f, 0.f, 40.f, 20.f}, theme, primaryCanvas);
+    standard.paint(primaryCanvas, theme);
+    ASSERT_EQ(primaryCanvas.fills.size(), 1u);
+    EXPECT_EQ(primaryCanvas.fills[0].color, theme.primary);
+    ASSERT_EQ(primaryCanvas.texts.size(), 1u);
+    EXPECT_EQ(primaryCanvas.texts[0].color, theme.primaryText);
+    EXPECT_NE(theme.primary, theme.secondary);
 }
 
 TEST(WidgetLayout, columnStacksWithGap) {
@@ -102,13 +166,37 @@ TEST(WidgetLayout, rowLaysOutHorizontally) {
     row.add(std::make_unique<bul::Button>("bbb"));
 
     bul::Size const size = row.measure(200.f, theme, canvas);
-    EXPECT_FLOAT_EQ(size.height, 9.f + 4.f);
-    EXPECT_FLOAT_EQ(size.width, (12.f + 8.f) + 3.f + (18.f + 8.f));
+    EXPECT_FLOAT_EQ(size.height, 9.f + 10.f);
+    EXPECT_FLOAT_EQ(size.width, (12.f + 20.f) + 3.f + (18.f + 20.f));
 
     row.layout({0.f, 0.f, size.width, size.height}, theme, canvas);
-    bul::Widget* second = row.hitTest({25.f, 2.f});
+    bul::Widget* second = row.hitTest({40.f, 2.f});
     ASSERT_NE(second, nullptr);
-    EXPECT_FLOAT_EQ(second->bounds().x, 23.f);
+    EXPECT_FLOAT_EQ(second->bounds().x, 35.f);
+}
+
+TEST(WidgetLayout, rowKeepsChildHeights) {
+    FakeCanvas canvas;
+    bul::Theme theme = testTheme();
+
+    auto tree   = std::make_unique<bul::Stack>(bul::Stack::Direction::Horizontal);
+    auto small  = std::make_unique<bul::Button>("xs");
+    small->size(bul::Button::Size::XSmall);
+    auto large = std::make_unique<bul::Button>("lg");
+    large->size(bul::Button::Size::Large);
+    bul::Button* smallRaw = small.get();
+    bul::Button* largeRaw = large.get();
+    tree->add(std::move(small));
+    tree->add(std::move(large));
+
+    bul::Size const wanted = tree->measure(200.f, theme, canvas);
+    tree->layout({0.f, 0.f, wanted.width, wanted.height}, theme, canvas);
+
+    // Different sizes must keep their own height inside a row.
+    EXPECT_FLOAT_EQ(smallRaw->bounds().height, 7.2f + 2.f);
+    EXPECT_FLOAT_EQ(largeRaw->bounds().height, 10.35f + 16.f);
+    EXPECT_LT(smallRaw->bounds().height, largeRaw->bounds().height);
+    EXPECT_FLOAT_EQ(tree->bounds().height, wanted.height);
 }
 
 TEST(WidgetLayout, clickOutsideDoesNotHit) {

@@ -16,6 +16,7 @@ under `### Changed`.
   i18n files and client-only `tooth.json`.
 - Pure model in `src/`: geometry, `Rgba`, `TextMetrics`, `Theme`.
 - Widget tree in `src/bul/widget/`: `Widget`, `Label`, `Button`, `Stack`.
+- Button variants: `type` (default/secondary/destructive/outline/link) and `size` (xs/sml/default/lg).
 - `bul::gfx::Painter` and `bul::gfx::GameCanvas` for engine drawing.
 - Modal host in `src-client/bul/modal/`: placeholder scene, hooks, render, input.
 - Public API: `showModal`, `closeModal`, `modalVisible`, `setTheme`, `theme`.

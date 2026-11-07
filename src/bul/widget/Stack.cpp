@@ -44,10 +44,15 @@ void Stack::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
     for (auto& child : mChildren) {
         Size const size = child->measure(mBounds.width, theme, canvas);
         if (mDirection == Direction::Vertical) {
+            // A column stretches its children across the width (the usual
+            // full-width row), but each child keeps its own height.
             child->layout({mBounds.x, cursor, mBounds.width, size.height}, theme, canvas);
             cursor += size.height + gap;
         } else {
-            child->layout({cursor, mBounds.y, size.width, mBounds.height}, theme, canvas);
+            // A row must NOT stretch the cross axis, otherwise children with
+            // different heights (button sizes) would all be drawn at the height
+            // of the tallest one.
+            child->layout({cursor, mBounds.y, size.width, size.height}, theme, canvas);
             cursor += size.width + gap;
         }
     }

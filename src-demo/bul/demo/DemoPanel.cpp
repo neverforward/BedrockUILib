@@ -7,6 +7,7 @@
 
 #include "bul/demo/DemoPanel.h"
 
+#include <functional>
 #include <memory>
 #include <string>
 
@@ -44,10 +45,39 @@ ll::event::ListenerPtr gJoinListener;
     body->muted();
     column->add(std::move(body));
 
-    auto buttons = std::make_unique<Stack>(Stack::Direction::Horizontal);
-    buttons->gap(8.f);
-    buttons->add(std::make_unique<Button>(std::string{"Close"}, [] { closeModal(); }));
-    column->add(std::move(buttons));
+    // Button types: the surface, border and text colour are theme tokens.
+    auto types = std::make_unique<Stack>(Stack::Direction::Horizontal);
+    types->gap(6.f);
+    auto addTyped = [&types](char const* text, Button::Type type, std::function<void()> onClick = {}) {
+        auto button = std::make_unique<Button>(std::string{text}, std::move(onClick));
+        button->type(type);
+        types->add(std::move(button));
+    };
+    addTyped("default", Button::Type::Default);
+    addTyped("secondary", Button::Type::Secondary);
+    addTyped("destructive", Button::Type::Destructive);
+    addTyped("outline", Button::Type::Outline);
+    addTyped("link", Button::Type::Link, [] { closeModal(); });
+    column->add(std::move(types));
+
+    // Button sizes: only scale and padding change.
+    auto sizes = std::make_unique<Stack>(Stack::Direction::Horizontal);
+    sizes->gap(6.f);
+    auto addSized = [&sizes](char const* text, Button::Size size) {
+        auto button = std::make_unique<Button>(std::string{text});
+        button->size(size);
+        sizes->add(std::move(button));
+    };
+    addSized("xs", Button::Size::XSmall);
+    addSized("sml", Button::Size::Small);
+    addSized("default", Button::Size::Default);
+    addSized("lg", Button::Size::Large);
+    column->add(std::move(sizes));
+
+    auto actions = std::make_unique<Stack>(Stack::Direction::Horizontal);
+    actions->gap(8.f);
+    actions->add(std::make_unique<Button>(std::string{"Close"}, [] { closeModal(); }));
+    column->add(std::move(actions));
     return column;
 }
 
