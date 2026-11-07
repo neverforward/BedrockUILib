@@ -2,21 +2,14 @@ on:
   release:
     types:
       - published
-  
+
 jobs:
   build:
     runs-on: windows-latest
-    strategy:
-      matrix:
-        target_type:
-          - server
-          - client
     steps:
       - uses: actions/checkout@v7
 
       - uses: xmake-io/github-action-setup-xmake@v1
-        # with:
-        #   xmake-version: branch@master
 
       - uses: actions/cache@v6
         with:
@@ -34,15 +27,34 @@ jobs:
       - run: |
           xmake repo -u
 
+      # Version comes from the release tag: xmake renders
+      # build/generated/bul/Version.h from it, and the manifest is patched below.
+      - name: Derive version from tag
+        shell: pwsh
+        run: |
+          $version = "${{ github.ref_name }}".TrimStart('v')
+          "BUL_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      # Client-only library: no server variant is published.
       - run: |
-          xmake f -a x64 -m release -p windows --target_type=${{ matrix.target_type }} -y
+          xmake f -a x64 -m release -p windows --target_type=client -y
 
       - run: |
           xmake -w -y
 
+      - name: Stamp manifest version
+        shell: pwsh
+        run: |
+          Get-ChildItem -Path bin -Filter manifest.json -Recurse | ForEach-Object {
+            $text = Get-Content $_.FullName -Raw
+            $text = $text -replace '"version"\s*:\s*"[^"]*"', ('"version": "' + $env:BUL_VERSION + '"')
+            Set-Content $_.FullName -Value $text -NoNewline -Encoding utf8
+            Write-Host "stamped $($_.FullName) -> $env:BUL_VERSION"
+          }
+
       - uses: actions/upload-artifact@v7
         with:
-          name: ${{ github.event.repository.name }}-${{ github.sha }}-${{ matrix.target_type }}-windows-x64
+          name: ${{ github.event.repository.name }}-${{ github.sha }}-client-windows-x64
           path: |
             bin/
 
@@ -67,28 +79,23 @@ jobs:
       - update-release-notes
     permissions:
       contents: write
-    strategy:
-      matrix:
-        target_type:
-          - server
-          - client
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
 
       - uses: actions/download-artifact@v8
         with:
-          name: ${{ github.event.repository.name }}-${{ github.sha }}-${{ matrix.target_type }}-windows-x64
+          name: ${{ github.event.repository.name }}-${{ github.sha }}-client-windows-x64
           path: artifact
 
       - run: |
           cp CHANGELOG.md LICENSE README.md artifact/
 
       - run: |
-          zip -r ../${{ github.event.repository.name }}-${{ matrix.target_type }}-windows-x64.zip *
+          zip -r ../${{ github.event.repository.name }}-client-windows-x64.zip *
         working-directory: artifact
 
       - uses: softprops/action-gh-release@v3
         with:
           files: |
-            ${{ github.event.repository.name }}-${{ matrix.target_type }}-windows-x64.zip
+            ${{ github.event.repository.name }}-client-windows-x64.zip

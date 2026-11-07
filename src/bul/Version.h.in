@@ -1,0 +1,36 @@
+#pragma once
+
+#include <string_view>
+
+// Template for the generated version header: xmake substitutes the @...@
+// placeholders from the git tag and writes build/generated/bul/Version.h.
+// Do not include this file directly.
+//
+// 0.x policy: source compatibility only. A breaking change bumps the minor
+// version and is recorded under ### Changed in CHANGELOG.md.
+#define BUL_VERSION_MAJOR @BUL_VERSION_MAJOR@
+#define BUL_VERSION_MINOR @BUL_VERSION_MINOR@
+#define BUL_VERSION_PATCH @BUL_VERSION_PATCH@
+#define BUL_VERSION_STRING "@BUL_VERSION_STRING@"
+
+namespace bul {
+
+/// Semantic version, compile-time constant so tests and consumers can check it
+/// without linking the library.
+struct Version {
+    unsigned major;
+    unsigned minor;
+    unsigned patch;
+
+    friend constexpr bool operator==(Version const&, Version const&) = default;
+};
+
+inline constexpr Version version{Version{BUL_VERSION_MAJOR, BUL_VERSION_MINOR, BUL_VERSION_PATCH}};
+
+inline constexpr std::string_view versionString{BUL_VERSION_STRING};
+
+/// ABI generation. Consumers must be rebuilt when this changes; within one
+/// generation the exported headers stay compatible.
+inline constexpr unsigned abiVersion{BUL_VERSION_MAJOR};
+
+} // namespace bul

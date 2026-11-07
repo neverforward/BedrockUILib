@@ -1,0 +1,115 @@
+#include "bul/modal/ModalInternal.h"
+
+#include <algorithm>
+
+#include "ll/api/event/EventBus.h"
+#include "ll/api/event/render/UIRenderEvent.h"
+
+#include "mc/client/game/ClientInstance.h"
+#include "mc/client/gui/GuiData.h"
+#include "mc/client/gui/screens/ScreenView.h"
+#include "mc/client/gui/screens/UIScene.h"
+#include "mc/client/renderer/screen/MinecraftUIRenderContext.h"
+
+#include "bul/gfx/GameCanvas.h"
+
+namespace bul::detail {
+
+namespace {
+
+void drawModal(MinecraftUIRenderContext& context) {
+    gfx::GameCanvas canvas{context};
+    Rect const      screen = canvas.screen();
+    canvas.fill(screen, Rgba{0.f, 0.f, 0.f, 1.f}, theme.scrim);
+
+    // The window is the content size plus its own padding: measuring the tree
+    // gives the children only, so shrinking the frame by the padding used to clip
+    // the last child (the button) outside it.
+    float const padding  = theme.padding;
+    float const maxWidth = std::min(screen.width * 0.7f, 360.f);
+    Size const  wanted   = root->measure(std::max(maxWidth - 2.f * padding, 40.f), theme, canvas);
+    float const width    = std::min(wanted.width + 2.f * padding, maxWidth);
+    float const height   = std::min(wanted.height + 2.f * padding, screen.height * 0.85f);
+    Rect const  window   = Rect::fromCenterSize({screen.width / 2.f, screen.height / 2.f}, width, height);
+
+    canvas.fill(window, theme.panel, 1.f);
+    canvas.outline(window, theme.panelBorder, 1.f);
+    root->layout(window.inset(padding, padding), theme, canvas);
+
+    // Hover comes from the engine pointer state once per frame: that state only
+    // updates while the engine still processes mouse input, so it cannot be read
+    // from the event that triggered the frame.
+    Point const   pointer     = pointerInGuiUnits(context.mClient);
+    Widget* const hoverTarget = [&] {
+        Widget* const hit = root->hitTest(pointer);
+        return (hit != nullptr && hit->interactive()) ? hit : nullptr;
+    }();
+    if (hovered && hovered != hoverTarget) {
+        hovered->setHovered(false);
+    }
+    hovered = hoverTarget;
+    if (hovered) {
+        hovered->setHovered(true);
+    }
+
+    root->paint(canvas, theme);
+    canvas.flush();
+
+    if (!loggedWindow) {
+        loggedWindow = true;
+        log().info(
+            "bul: window {:.0f}x{:.0f} of screen {:.0f}x{:.0f} at ({:.0f}, {:.0f})",
+            width,
+            height,
+            screen.width,
+            screen.height,
+            window.x,
+            window.y
+        );
+        auto const sizes = context.mClient.getGuiData()->mScreenSizeData;
+        log().info(
+            "bul: sizes total=({:.0f},{:.0f}) client=({:.0f},{:.0f}) ui=({:.0f},{:.0f}) scale={:.3f}",
+            sizes->totalScreenSize->x,
+            sizes->totalScreenSize->y,
+            sizes->clientScreenSize->x,
+            sizes->clientScreenSize->y,
+            sizes->clientUIScreenSize->x,
+            sizes->clientUIScreenSize->y,
+            context.mClient.getGuiData()->mGuiScale
+        );
+    }
+}
+
+} // namespace
+
+void renderModalFrame(MinecraftUIRenderContext& context) {
+    std::lock_guard lock{mutex};
+    if (!visible || !root) {
+        return;
+    }
+    // The stack may still reference the scene we just popped: release our copy a
+    // few frames later instead of immediately.
+    if (retiredScene && ++retiredFrames > 10) {
+        retiredScene.reset();
+        retiredFrames = 0;
+    }
+    drawModal(context);
+}
+
+void installRender() {
+    static ll::event::ListenerPtr listener;
+    if (listener) {
+        return;
+    }
+    auto& bus = ll::event::EventBus::getInstance();
+    listener  = bus.emplaceListener<ll::event::BeforeUIRenderEvent>([](ll::event::BeforeUIRenderEvent& event) {
+        tryApplyClose();
+        if (&event.screenView() != ourView()) {
+            return; // only our placeholder's pass is replaced
+        }
+        event.cancel();
+        renderModalFrame(event.uiRenderContext());
+    });
+}
+
+} // namespace bul::detail

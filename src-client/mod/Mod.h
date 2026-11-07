@@ -2,14 +2,16 @@
 
 #include "ll/api/mod/NativeMod.h"
 
-namespace my_mod {
+namespace bul {
 
-class MyMod {
+/// Mod entry point. Until the public API lands this only proves that the
+/// skeleton loads, translates and unloads cleanly on the client target.
+class BedrockUILib {
 
 public:
-    static MyMod& getInstance();
+    static BedrockUILib& getInstance();
 
-    MyMod() : mSelf(*ll::mod::NativeMod::current()) {}
+    BedrockUILib() : mSelf(*ll::mod::NativeMod::current()) {}
 
     [[nodiscard]] ll::mod::NativeMod& getSelf() const { return mSelf; }
 
@@ -22,12 +24,8 @@ public:
     /// @return True if the mod is disabled successfully.
     bool disable();
 
-    // TODO: Implement this method if you need to unload the mod.
-    // /// @return True if the mod is unloaded successfully.
-    // bool unload();
-
 private:
     ll::mod::NativeMod& mSelf;
 };
 
-} // namespace my_mod
+} // namespace bul

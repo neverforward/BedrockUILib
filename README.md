@@ -1,29 +1,76 @@
-# LeviLamina Mod Template
+# BedrockUILib
 
-> [!WARNING]
-> Remember to change the [LICENSE](LICENSE) file when you use this template
+Client-only library for LeviLamina that lets **other client mods** build screens,
+panels and HUD elements with the game's own UI stack — the way the game draws its
+own info boxes and settings panels. It is not an external overlay window and it
+does not render outside the game's UI pass.
 
-Mod Template for LeviLamina
+> Status: **repository skeleton**. There is no public API yet. The design
+> decision behind it is in [docs/investigation-native-ui.md](docs/investigation-native-ui.md)
+> and [docs/architecture.md](docs/architecture.md).
 
-## Usage
+## What it is not
 
-For detailed instructions, see the [LeviLamina Documentation](https://docs.levimc.org/LeviLamina/developer_guides/tutorials/create_your_first_mod/)
+- Not a player-facing mod: it has no screens of its own outside a `--tests=y` demo.
+- Not a server mod: `--target_type=server` fails at configure time, by design.
+- Not a UI kit with a look: colours, radii, fonts and spacing are theme tokens
+  supplied by the consumer, with neutral defaults that exist only as placeholders.
 
-1. Generate a new repository from this template
-2. Clone the new repository
-3. Change the mod name and the expected LeviLamina version in `xmake.lua`
-4. Add your code.
-5. Run `xmake f -y -p windows -a x64 -m release` in the root of the repository
-6. Run `xmake` to build the mod.
+## Requirements
 
-After a successful build, you will find mod in `bin/`
+- Windows x64, Minecraft Bedrock GDK client (1.26.60.x) through LeviLauncher.
+- [xmake](https://xmake.io) with clang-cl, C++20.
+- LeviLamina client 26.60.x (the package is pinned in `xmake.lua`).
 
-## Contributing
+## Build
 
-Ask questions by creating an issue.
+```bash
+xmake f -y -p windows -a x64 -m release --target_type=client
+xmake build BedrockUILib
+```
 
-PRs accepted.
+The artifact is `bin/BedrockUILib/` (dll, pdb, manifest.json, `lang/`).
+`lang/` is a runtime folder and is never inside the dll.
+
+## Test
+
+```bash
+xmake f -y -p windows -a x64 -m debug --tests=y --target_type=client
+xmake build BedrockUILibTests
+xmake run BedrockUILibTests
+```
+
+Reconfigure back to release with `--tests=n` before building the mod itself.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the rules.
+
+## Demo (`--tests=y` only)
+
+The demo panel is never part of a release build: `src-demo/` is added to the mod
+target only when tests are enabled. To try it in game:
+
+```bash
+xmake f -y -p windows -a x64 -m debug --tests=y --target_type=client
+xmake build BedrockUILib
+```
+
+Copy `bin/BedrockUILib/` into `<instance>/mods/BedrockUILib/`, launch, then:
+
+- **F6** toggles the panel;
+- **Esc** closes it.
+
+The panel is modal: while visible it cancels the HUD pass (so the background HUD
+is gone), draws a scrim, and swallows keyboard and mouse through LL's
+cancellable `KeyInputEvent` / `MouseInputEvent`, so nothing behind it reacts. The panel is drawn inside the game's UI
+pass, so it follows the GUI scale and is ordered with the rest of the UI. What it
+is meant to prove is listed in
+[docs/investigation-native-ui.md](docs/investigation-native-ui.md) under
+"Minimal runnable verification".
+
+## Versioning
+
+0.x: source compatibility only. The version lives in `src/bul/Version.h`,
+`CHANGELOG.md` and the git tag, and those three must agree.
 
 ## License
 
-CC0-1.0 © LeviMC(LiteLDev)
+MIT (see [LICENSE](LICENSE)).

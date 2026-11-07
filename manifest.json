@@ -3,5 +3,7 @@
     "entry": "${modFile}",
     "version": "${modVersion}",
     "type": "native",
-    "platform": "${modPlatform}"
+    "platform": "${modPlatform}",
+    "author": "neverforward",
+    "description": "Client-only library for building screens, panels and HUD elements with the game's own UI stack."
 }
