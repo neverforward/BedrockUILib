@@ -28,6 +28,8 @@ under `### Changed`.
   (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
 - `Checkbox`: a box with an inline label (`checked` / `onCheckedChange`,
   `indeterminate`, `readOnly`).
+- `RadioGroup`: radio buttons with one choice (`add`, `value` /
+  `onValueChange`, `readOnly`); arrow keys move the selection.
 - Engine adapter (`Painter`, `GameCanvas`) and the modal host (`showModal`,
   `closeModal`, `modalVisible`, `setTheme`, `theme`).
 

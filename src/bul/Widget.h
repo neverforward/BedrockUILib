@@ -12,6 +12,7 @@
 #include "bul/widget/FieldLabel.h"
 #include "bul/widget/Input.h"
 #include "bul/widget/Label.h"
+#include "bul/widget/RadioGroup.h"
 #include "bul/widget/Select.h"
 #include "bul/widget/Stack.h"
 #include "bul/widget/Widget.h"

@@ -38,7 +38,7 @@ ll::event::ListenerPtr gJoinListener;
 
 [[nodiscard]] ll::io::Logger& log() { return BedrockUILib::getInstance().getSelf().getLogger(); }
 
-enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2, Select = 3, Checkbox = 4 };
+enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2, Select = 3, Checkbox = 4, Radio = 5 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
 /// forwarded to it. Keeping it in the demo leaves the library free of navigation
@@ -142,6 +142,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Input", Page::Input);
     entry("Select", Page::Select);
     entry("Checkbox", Page::Checkbox);
+    entry("Radio", Page::Radio);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -456,6 +457,83 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     return page("Checkbox", "A checkbox with an inline label; three states.", std::move(body), back);
 }
 
+// -------------------------------------------------------------------- radio page
+
+[[nodiscard]] std::unique_ptr<Field> planField() {
+    auto field = std::make_unique<Field>();
+    field->label("Plan");
+    auto group = std::make_unique<RadioGroup>();
+    group->add("starter", "Starter");
+    group->add("pro", "Pro");
+    group->add("team", "Team");
+    group->onValueChange([](std::string const& value) { log().debug("demo: plan='{}'", value); });
+    field->control(std::move(group));
+    field->description("Arrow keys move.");
+    return field;
+}
+
+[[nodiscard]] std::unique_ptr<Field> layoutRadioField() {
+    auto field = std::make_unique<Field>();
+    field->label("Layout");
+    auto group = std::make_unique<RadioGroup>();
+    group->direction(Stack::Direction::Horizontal);
+    group->add("compact", "Compact");
+    group->add("comfortable", "Comfortable");
+    field->control(std::move(group));
+    return field;
+}
+
+[[nodiscard]] std::unique_ptr<Field> invalidRadioField() {
+    auto field = std::make_unique<Field>();
+    field->label("Notifications");
+    field->invalid(true);
+    auto group = std::make_unique<RadioGroup>();
+    group->add("daily", "Daily");
+    group->add("weekly", "Weekly");
+    field->control(std::move(group));
+    field->description("Field invalid is red.");
+    return field;
+}
+
+[[nodiscard]] std::unique_ptr<Field> disabledRadioField() {
+    auto field = std::make_unique<Field>();
+    field->label("Disabled");
+    field->disabled(true);
+    auto group = std::make_unique<RadioGroup>();
+    group->add("on", "On");
+    group->add("off", "Off");
+    field->control(std::move(group));
+    return field;
+}
+
+[[nodiscard]] std::unique_ptr<Field> requiredRadioField() {
+    auto field = std::make_unique<Field>();
+    field->label("Terms");
+    field->required(true);
+    auto group = std::make_unique<RadioGroup>();
+    group->add("accept", "Accept");
+    group->add("decline", "Decline");
+    field->control(std::move(group));
+    return field;
+}
+
+[[nodiscard]] std::unique_ptr<Widget> radioPage(std::function<void()> back) {
+    auto grid = row(10.f);
+    auto left = column(8.f);
+    left->add(planField());
+    left->add(layoutRadioField());
+    auto right = column(8.f);
+    right->add(invalidRadioField());
+    right->add(disabledRadioField());
+    right->add(requiredRadioField());
+    grid->add(std::move(left), 1.f);
+    grid->add(std::move(right), 1.f);
+
+    auto body = column(8.f);
+    body->add(std::move(grid));
+    return page("Radio", "One option out of a group; the dot marks it.", std::move(body), back);
+}
+
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -469,6 +547,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(inputPage(back));
     view->add(selectPage(back));
     view->add(checkboxPage(back));
+    view->add(radioPage(back));
     return router;
 }
 
