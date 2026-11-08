@@ -59,7 +59,7 @@ Copy `bin/BedrockUILib/` into `<instance>/mods/BedrockUILib/`, launch, then:
 - **Esc** closes it.
 
 The panel opens on a gallery home page that routes to one page per component
-(Buttons, Input); each page is the reference for that component, `Back` returns
+(Buttons, Input, Select); each page is the reference for that component, `Back` returns
 to the home page.
 
 [docs/investigation-native-ui.md](docs/investigation-native-ui.md) under

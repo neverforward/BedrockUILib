@@ -41,20 +41,42 @@ void drawModal(MinecraftUIRenderContext& context) {
     // Hover comes from the engine pointer state once per frame: that state only
     // updates while the engine still processes mouse input, so it cannot be read
     // from the event that triggered the frame.
-    Point const   pointer     = pointerInGuiUnits(context.mClient);
-    Widget* const hoverTarget = [&] {
+    Point const pointer = pointerInGuiUnits(context.mClient);
+
+    // An open popup owns the pointer: it is hovered and hit-tested before the
+    // tree, so the row under the pointer highlights and the control behind it
+    // cannot react.
+    std::vector<Widget*> overlays;
+    root->collectOverlays(overlays);
+    Widget* hoverTarget = nullptr;
+    for (auto it = overlays.rbegin(); it != overlays.rend(); ++it) {
+        if (Widget* const claimed = (*it)->overlayHitTest(pointer)) {
+            hoverTarget = claimed;
+            break;
+        }
+    }
+    if (hoverTarget == nullptr) {
         Widget* const hit = root->hitTest(pointer);
-        return (hit != nullptr && hit->interactive()) ? hit : nullptr;
-    }();
+        hoverTarget       = (hit != nullptr && hit->interactive()) ? hit : nullptr;
+    }
     if (hovered && hovered != hoverTarget) {
         hovered->setHovered(false);
     }
     hovered = hoverTarget;
     if (hovered) {
         hovered->setHovered(true);
+        hovered->setPointer(pointer);
     }
 
     root->paint(canvas, theme);
+    if (!overlays.empty()) {
+        // Flush the tree first: the popup must cover the text drawn under it,
+        // and one batch draws all fills before all text.
+        canvas.flush();
+        for (Widget* const overlayWidget : overlays) {
+            overlayWidget->paintOverlay(canvas, theme);
+        }
+    }
     canvas.flush();
 
     if (!loggedWindow) {

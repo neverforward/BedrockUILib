@@ -5,8 +5,8 @@
 #include <vector>
 
 #include "bul/Canvas.h"
-#include "bul/Geometry.h"
 #include "bul/Export.h"
+#include "bul/Geometry.h"
 
 namespace bul {
 
@@ -33,7 +33,7 @@ struct ControlState {
 
 /// Logical key a focusable widget understands. The host maps engine key codes to
 /// this, so widgets stay free of the SDK.
-enum class Key { None, Backspace, Delete, Left, Right, Home, End, Enter, Tab, Escape, A };
+enum class Key { None, Backspace, Delete, Left, Right, Up, Down, Home, End, Enter, Space, Tab, Escape, A };
 
 struct KeyStroke {
     Key  key{Key::None};
@@ -128,6 +128,30 @@ public:
             out.push_back(this);
         }
     }
+
+    // ---------------------------------------------------------------- overlays
+
+    /// A popup (a select list, a menu) is drawn over the whole tree instead of
+    /// inside its parent's bounds: the host paints it after the tree and gives
+    /// it the pointer first while it is open.
+
+    /// Appends every open popup below this widget.
+    virtual void collectOverlays(std::vector<Widget*>&) {}
+
+    /// Paints the open popup; called after the tree has been painted.
+    virtual void paintOverlay(Canvas&, Theme const&) const {}
+
+    /// Claims the pointer while a popup is open (nullptr when closed). Claiming
+    /// the whole screen is what makes the popup modal: an outside click closes
+    /// it instead of activating the control behind it.
+    [[nodiscard]] virtual Widget* overlayHitTest(Point) { return nullptr; }
+
+    /// Closes the popup because the host asked for it (escape, click outside).
+    virtual void dismissOverlay() {}
+
+    /// Pointer position while this widget is hovered; a popup uses it for the
+    /// highlighted row.
+    virtual void setPointer(Point) {}
 
 protected:
     [[nodiscard]] Rect contentRect(Rect const& outer) const noexcept {

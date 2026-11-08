@@ -229,4 +229,12 @@ void Field::collectFocusables(std::vector<Widget*>& out) {
     }
 }
 
+void Field::collectOverlays(std::vector<Widget*>& out) {
+    for (auto* child : {mLabel.get(), mControl.get(), mDescription.get()}) {
+        if (child) {
+            child->collectOverlays(out);
+        }
+    }
+}
+
 } // namespace bul

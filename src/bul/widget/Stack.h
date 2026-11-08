@@ -32,6 +32,7 @@ public:
     [[nodiscard]] Widget* hitTest(Point point) override;
     void                  setControlState(ControlState const& state) override;
     void                  collectFocusables(std::vector<Widget*>& out) override;
+    void                  collectOverlays(std::vector<Widget*>& out) override;
 
 private:
     struct Entry {

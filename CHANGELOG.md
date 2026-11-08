@@ -24,6 +24,8 @@ under `### Changed`.
   (F6 in `--tests=y` builds).
 - Public C++ API exported for consumer mods (`BUL_API`): another mod includes the
   public headers and links `BedrockUILib.lib`.
+- `Select`: a dropdown whose popup is painted above the tree by the host
+  (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
 - Engine adapter (`Painter`, `GameCanvas`) and the modal host (`showModal`,
   `closeModal`, `modalVisible`, `setTheme`, `theme`).
 

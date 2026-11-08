@@ -38,7 +38,7 @@ ll::event::ListenerPtr gJoinListener;
 
 [[nodiscard]] ll::io::Logger& log() { return BedrockUILib::getInstance().getSelf().getLogger(); }
 
-enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2 };
+enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2, Select = 3 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
 /// forwarded to it. Keeping it in the demo leaves the library free of navigation
@@ -80,6 +80,8 @@ public:
     void setControlState(ControlState const& state) override { mPages[mCurrent]->setControlState(state); }
 
     void collectFocusables(std::vector<Widget*>& out) override { mPages[mCurrent]->collectFocusables(out); }
+
+    void collectOverlays(std::vector<Widget*>& out) override { mPages[mCurrent]->collectOverlays(out); }
 
 private:
     std::vector<std::unique_ptr<Widget>> mPages{};
@@ -138,6 +140,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     };
     entry("Buttons", Page::Buttons);
     entry("Input", Page::Input);
+    entry("Select", Page::Select);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -315,6 +318,83 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     return page("Input", "Label, control, hint; states are field attributes.", std::move(body), back);
 }
 
+// ------------------------------------------------------------------- select page
+
+/// Select.Value starts empty and shows the placeholder until an option is picked.
+[[nodiscard]] std::unique_ptr<Field> fruitField() {
+    auto field = std::make_unique<Field>();
+    field->label("Fruit");
+
+    auto select = std::make_unique<Select>();
+    select->placeholder("Choose a fruit");
+    select->item("apple", "Apple");
+    select->item("banana", "Banana");
+    select->item("cherry", "Cherry");
+    select->item("durian", "Durian (out of stock)", true);
+    select->onValueChange([](std::string const& value) { log().debug("demo: fruit='{}'", value); });
+    field->control(std::move(select));
+
+    field->description("Esc or outside click.");
+    return field;
+}
+
+/// A preset value: the trigger shows the label of the matching item.
+[[nodiscard]] std::unique_ptr<Field> themeField() {
+    auto field = std::make_unique<Field>();
+    field->label("Theme");
+
+    auto select = std::make_unique<Select>();
+    select->value("dark");
+    select->item("light", "Light");
+    select->item("dark", "Dark");
+    select->item("system", "System");
+    field->control(std::move(select));
+    return field;
+}
+
+/// The field's disabled attribute reaches the control through setControlState.
+[[nodiscard]] std::unique_ptr<Field> disabledSelectField() {
+    auto field = std::make_unique<Field>();
+    field->label("Disabled");
+    field->disabled(true);
+
+    auto select = std::make_unique<Select>();
+    select->placeholder("Not available");
+    select->item("one", "One");
+    field->control(std::move(select));
+    return field;
+}
+
+/// Required is a field attribute; the select only carries the flag.
+[[nodiscard]] std::unique_ptr<Field> requiredSelectField() {
+    auto field = std::make_unique<Field>();
+    field->label("Required");
+    field->required(true);
+
+    auto select = std::make_unique<Select>();
+    select->placeholder("Pick one");
+    select->item("one", "One");
+    select->item("two", "Two");
+    field->control(std::move(select));
+    return field;
+}
+
+[[nodiscard]] std::unique_ptr<Widget> selectPage(std::function<void()> back) {
+    auto grid = row(10.f);
+    auto left = column(8.f);
+    left->add(fruitField());
+    left->add(disabledSelectField());
+    auto right = column(8.f);
+    right->add(themeField());
+    right->add(requiredSelectField());
+    grid->add(std::move(left), 1.f);
+    grid->add(std::move(right), 1.f);
+
+    auto body = column(8.f);
+    body->add(std::move(grid));
+    return page("Select", "One value from a list, opened over the form.", std::move(body), back);
+}
+
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -326,6 +406,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(homePage(gotoPage));
     view->add(buttonsPage(back));
     view->add(inputPage(back));
+    view->add(selectPage(back));
     return router;
 }
 

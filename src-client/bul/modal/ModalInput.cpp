@@ -28,10 +28,13 @@ constexpr int kBackspaceKey = 8;
 constexpr int kTabKey       = 9;
 constexpr int kReturnKey    = 13;
 constexpr int kEscapeKey    = 27;
+constexpr int kSpaceKey     = 32;
 constexpr int kEndKey       = 35;
 constexpr int kHomeKey      = 36;
 constexpr int kLeftKey      = 37;
+constexpr int kUpKey        = 38;
 constexpr int kRightKey     = 39;
+constexpr int kDownKey      = 40;
 constexpr int kDeleteKey    = 46;
 constexpr int kKeyA         = 65;
 constexpr int kKeyC         = 67;
@@ -51,6 +54,12 @@ bool isDown(int virtualKey) { return (GetKeyState(virtualKey) & 0x8000) != 0; }
         return Key::Left;
     case kRightKey:
         return Key::Right;
+    case kUpKey:
+        return Key::Up;
+    case kDownKey:
+        return Key::Down;
+    case kSpaceKey:
+        return Key::Space;
     case kHomeKey:
         return Key::Home;
     case kEndKey:
@@ -87,6 +96,18 @@ void cycleFocus(int direction) {
     setFocus(focusables[static_cast<std::size_t>(next)]);
 }
 
+/// The topmost open popup, or nullptr. The pointer stays valid while the window
+/// is open, like `focused`.
+[[nodiscard]] Widget* topOverlay() {
+    std::lock_guard lock{mutex};
+    if (!root) {
+        return nullptr;
+    }
+    std::vector<Widget*> overlays;
+    root->collectOverlays(overlays);
+    return overlays.empty() ? nullptr : overlays.back();
+}
+
 /// Ctrl+C and Ctrl+X. The clipboard is platform glue, so it lives here and not in
 /// the widget: the tree only exposes selection text and text insertion.
 void copySelection(Widget* target, bool cut) {
@@ -107,6 +128,10 @@ void routeKey(int code) {
     bool const shift = isDown(VK_SHIFT);
 
     if (code == kTabKey && !ctrl) {
+        // Tab closes an open popup before moving focus, like a browser does.
+        if (Widget* overlay = topOverlay()) {
+            overlay->dismissOverlay();
+        }
         cycleFocus(shift ? -1 : 1);
         return;
     }
@@ -221,6 +246,11 @@ void installInput() {
             return;
         }
         if (event.keyCode() == kEscapeKey) {
+            // Escape closes an open popup first; only then the window.
+            if (Widget* overlay = topOverlay()) {
+                overlay->dismissOverlay();
+                return;
+            }
             closeHost();
             return;
         }
@@ -251,7 +281,18 @@ void installInput() {
                 if (!root) {
                     return;
                 }
-                hit = root->hitTest(point);
+                // An open popup gets the pointer first and claims the whole
+                // screen, so an outside click closes it instead of reaching the
+                // control behind it.
+                std::vector<Widget*> overlays;
+                root->collectOverlays(overlays);
+                Widget* claimed = nullptr;
+                for (auto it = overlays.rbegin(); it != overlays.rend(); ++it) {
+                    if ((claimed = (*it)->overlayHitTest(point)) != nullptr) {
+                        break;
+                    }
+                }
+                hit = claimed != nullptr ? claimed : root->hitTest(point);
                 click =
                     event.actionButtonId() == MouseAction::ActionLeft && event.buttonData() == MouseAction::DataDown;
                 if (click) {

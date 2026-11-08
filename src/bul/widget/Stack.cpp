@@ -125,4 +125,10 @@ void Stack::collectFocusables(std::vector<Widget*>& out) {
     }
 }
 
+void Stack::collectOverlays(std::vector<Widget*>& out) {
+    for (auto& entry : mEntries) {
+        entry.child->collectOverlays(out);
+    }
+}
+
 } // namespace bul
