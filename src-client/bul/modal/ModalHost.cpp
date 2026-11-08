@@ -30,7 +30,10 @@ void finishCloseLocked(char const* reason) {
     popRetries    = 0;
     leaveAsked    = false;
     closingFrames = 0;
-    hovered       = nullptr;
+    releaseTextKeyboard();
+    setFocus(nullptr);
+    hovered = nullptr;
+    pendingEdits.clear(); // edits of a closed window must not touch the old tree
     log().info("bul: modal closed ({})", reason);
 }
 
@@ -127,6 +130,7 @@ bool openHost() {
     installHostHooks();
     installRender();
     installInput();
+    installTextRouting();
     sceneStack(*instance)->pushScreen(placeholder, false);
     log().info("bul: modal opened (active stack)");
     return true;
@@ -143,7 +147,7 @@ void closeHost() {
     popRetries    = 0;
     leaveAsked    = false;
     closingFrames = 0;
-    log().info("bul: close requested");
+    log().debug("bul: close requested");
 }
 
 void tryApplyClose() {
@@ -187,10 +191,10 @@ void tryApplyClose() {
                 leaveAsked = true;
                 action     = Action::Leave;
             } else if (popRetries % 30 == 0) {
-                log().info("bul: pop waiting, top='{}' retry={}", stack->getScreenName(), popRetries);
+                log().debug("bul: pop waiting, top='{}' retry={}", stack->getScreenName(), popRetries);
             }
         } else {
-            log().info("bul: popping placeholder (top confirmed)");
+            log().debug("bul: popping placeholder (top confirmed)");
             popIssued = true;
             action    = Action::Pop;
         }

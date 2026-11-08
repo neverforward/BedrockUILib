@@ -29,6 +29,17 @@ struct Theme {
     Rgba destructiveHover{};
     Rgba destructiveText{};
 
+    /// Text field surface; slightly inset against `panel`.
+    Rgba input{};
+    /// Text field surface under the pointer.
+    Rgba inputHover{};
+    /// Text field border, also used by the disabled and invalid states with an
+    /// alpha change instead of a separate token.
+    Rgba inputBorder{};
+    /// Marker of an invalid field: its border and the required asterisk. Not the
+    /// destructive button surface, which is far too dark to read as a message.
+    Rgba invalid{};
+
     float fontScale{1.f};
     /// Inner padding of a panel.
     float padding{10.f};

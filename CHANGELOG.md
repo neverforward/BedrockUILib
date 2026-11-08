@@ -12,28 +12,38 @@ under `### Changed`.
 
 ### Added
 
-- xmake project skeleton with clang-cl warning set, `--tests=y` gtest target,
-  i18n files and client-only `tooth.json`.
-- Pure model in `src/`: geometry, `Rgba`, `TextMetrics`, `Theme`.
-- Widget tree in `src/bul/widget/`: `Widget`, `Label`, `Button`, `Stack`.
-- Button variants: `type` (default/secondary/destructive/outline/link) and `size` (xs/sml/default/lg).
-- `bul::gfx::Painter` and `bul::gfx::GameCanvas` for engine drawing.
-- Modal host in `src-client/bul/modal/`: placeholder scene, hooks, render, input.
-- Public API: `showModal`, `closeModal`, `modalVisible`, `setTheme`, `theme`.
-- Feasibility demo (`--tests=y` only): F6 toggles a modal window, Esc closes.
-- Version generated at build time from `BUL_VERSION`; `0.0.0` otherwise.
+- xmake project skeleton (clang-cl, `--tests=y` gtest target), i18n files,
+  client-only `tooth.json`, version header generated from `BUL_VERSION`.
+- Pure model: `Geometry`, `Rgba`, `TextMetrics`, `Theme`, `TextEdit` (UTF-8 caret
+  and selection).
+- Widget tree: `Widget`, `Stack`, `Label`, `Button`, `Badge`, `Field`,
+  `FieldLabel`, `FieldDescription`, `Input`.
+- Input editing: focus and Tab order, editing keys, clipboard, IME text; the host
+  claims the platform keyboard while a field has focus.
+- Native file dialog for file inputs, `docs/components.md` and the gallery demo
+  (F6 in `--tests=y` builds).
+- Engine adapter (`Painter`, `GameCanvas`) and the modal host (`showModal`,
+  `closeModal`, `modalVisible`, `setTheme`, `theme`).
 
 ### Changed
 
+- `Button` gained `type`, `size` and `disabled`; `Stack` gained a stretch factor.
+- The demo is a gallery: a home page routes to one page per component.
 - Modal code split into widget / gfx / modal modules; `Modal.cpp` is the facade.
 
 ### Fixed
 
-- Engine calls moved outside the host mutex (re-entrancy deadlock risk).
-- Watchdog for a pop that never lands, so the modal cannot stay stuck closing.
-- Retired placeholder scene released a few frames after the pop.
-- Modality split: touches, keys and the pointer all go through the tree.
-- `theme()` returns a copy instead of a reference to mutable state.
+- Engine calls moved outside the host mutex; close watchdog; retired scene
+  released a few frames later.
+- Focus and the platform keyboard are released when the window closes.
+- IME composition is applied as a delta stream (`0x08` backspace), so pinyin no
+  longer piles up in front of the committed text.
+- A field's width no longer depends on its value: it scrolls while focused and is
+  cut with `...` otherwise.
+- Weighted `Stack` children take their share of the leftover room, so columns
+  cannot overflow the window.
+- CJK text uses the field's own advance table: the caret stays on the glyph edge
+  and the text inside the box.
 
 ### Removed
 

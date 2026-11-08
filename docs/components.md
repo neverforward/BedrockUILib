@@ -1,0 +1,148 @@
+# Components
+
+The widget kit lives in `src/bul/widget/`, one file pair per component. A widget
+only measures, lays out and paints through `Canvas`; it never touches the engine.
+That is what lets the same tree run in the game, in a test with a recording
+canvas, or in an offline previewer.
+
+```cpp
+#include "bul/Widget.h"   // the umbrella header: every component below
+
+auto root = std::make_unique<bul::Stack>(bul::Stack::Direction::Vertical);
+root->gap(8.f);
+root->add(std::make_unique<bul::Label>("Settings"));
+root->add(std::make_unique<bul::Button>("Apply", [] { /* ... */ }));
+
+bul::showModal(std::move(root)); // bul/Modal.h
+```
+
+## Layout
+
+| Component | Purpose |
+| --- | --- |
+| `Widget` | Base node: `measure(availableWidth, theme, canvas)`, `layout(outer, ...)`, `paint(canvas, ...)`, `hitTest(point)`. |
+| `Stack` | Row or column. `add(child)` keeps the measured size; `add(child, 1.f)` lets the child take the room the other children leave. |
+| `Label` | One line of text, optionally muted. |
+| `Button` | `Type` (default/secondary/destructive/outline/link) and `Size` (xs/sml/default/lg); `disabled(true)` dims it and ignores clicks. |
+| `Badge` | Small pill that annotates another control (`Default`, `Secondary`, `Outline`, `Destructive`). |
+
+A `Stack` measures its children with the width it was offered; a column stretches
+its children to its own width, a row keeps each child's measured width and shares
+the leftover space with the stretched children.
+
+## Form field
+
+`Field` composes one control with its label and description, and carries the
+state the web component set puts on the field element:
+
+| Member | Meaning |
+| --- | --- |
+| `label(...)` | A `FieldLabel`, either given as a widget or created from text. |
+| `control(...)` | The control itself, usually an `Input`; a composite control (a row of input and button) is allowed. |
+| `description(...)` | A `FieldDescription`, the muted hint under the control. |
+| `orientation(...)` | `Vertical` (default) stacks the three parts; `Horizontal` puts the label on the left and gives the control the remaining width. |
+| `disabled(true)` | The field's `data-disabled`: dims the label and the description and disables the control. |
+| `invalid(true)` | The field's `data-invalid`: the control is drawn with `Theme::invalid`. |
+| `required(true)` | The label grows a `*` marker in `Theme::invalid`. |
+
+`FieldLabel` takes an optional decoration after the text, which is how a
+"Recommended" badge ends up inside the label; `FieldDescription` is muted and
+slightly smaller.
+
+State is imposed top-down through `Widget::setControlState`: a control combines
+what its container imposed with the flags it was given directly, so
+
+```cpp
+field.disabled(true);          // dims label, description and control
+input.disabled(true);          // the same effect for one control, without a field
+```
+
+are both valid and neither overwrites the other.
+
+## Input
+
+```cpp
+auto field = std::make_unique<bul::Field>();
+field->label("Email");
+field->description("Shown under the input.");
+
+auto input = std::make_unique<bul::Input>();
+input->placeholder("you@example.com");
+input->onChange([](std::string const& value) { /* called on every edit */ });
+field->control(std::move(input));
+```
+
+| Member | Meaning |
+| --- | --- |
+| `value(text)` / `value()` | The text. Setting it does not fire `onChange`; user edits do. |
+| `placeholder(text)` | Drawn in `Theme::textMuted` while the value is empty. |
+| `kind(...)` | `Text`, `Password` (one `*` per code point), `Search`, `File`. |
+| `disabled(true)` / `invalid(true)` | The two states; the field can impose them too. |
+| `required(true)` | Marks the input as required (the marker itself is drawn by the label). |
+| `maxLength(n)` | Limit in code points, not bytes: a Chinese character counts as one. |
+| `onSubmit(fn)` | Enter pressed while the input has focus. |
+| `validator(fn)` | `fn(const std::string&) -> bool` runs after every user edit. While it returns false the input is drawn with `Theme::invalid` (`invalid()` is true); the first passing edit clears it. Initial and programmatic values are not judged. |
+| `kind(File)` + host picker | Clicking a `Kind::File` input asks the modal host for a path (`wantsFilePicker`); the host opens the native file dialog and calls `chooseFile(path)`. |
+| `onChoose(fn)` | A file was chosen: the callback receives the full path. |
+| `filePath()` / `filePath(p)` | The chosen path (the full path; the field itself shows the file name). |
+| `chooseText(text)` / `emptyFileText(text)` | The two strings of a file input, for localization. |
+
+Editing rules live in `bul/TextEdit` and are unit-tested without a game: the
+caret is a byte offset that always sits on a code point boundary, Shift extends a
+selection from an anchor, typing or pasting replaces the selection, and pasted
+line breaks are dropped because the field is single line.
+
+Text events are a **delta stream**, not plain text: an IME rewriting its
+composition sends a backspace (`0x08`) for each character it takes back and then
+the new composition; `TextEdit::insert` applies those edits, so the pinyin never
+piles up in front of the committed characters.
+
+The box does not resize with its value: the value is scrolled while the field is
+focused and cut with an ellipsis otherwise, so a long string cannot push the
+window or the surrounding form around.
+
+**Wide glyphs get their own advance.** The engine measures CJK / Hangul /
+fullwidth code points narrower than the unicode fallback font it actually draws
+them with (the ASCII resource-pack font and the built-in unifont disagree). A
+field that trusted that measurement would draw text wider than the box and leave
+the caret inside the text. `Input` therefore lays the line out on its own
+per-code-point advance table -- a wide code point advances at least one line
+height -- and the caret, the selection plate, the visible window and the glyph
+positions all come from that one table. Runs of narrow glyphs are still drawn as
+one string; each wide glyph is placed on its cell.
+
+Focus, the caret and the clipboard belong to the host, not to the widget:
+
+- clicking a focusable widget gives it focus (`setFocused`), clicking anywhere
+  else takes it away;
+- Tab and Shift+Tab move between inputs in visual order;
+- Backspace, Delete, the arrow keys, Home, End and Ctrl+A are routed to the
+  focused widget as `KeyStroke`s;
+- **the host claims the platform keyboard while a text field has focus**
+  (`KeyboardManager::tryClaimKeyboardOwnership` + `tryEnableKeyboard`). Without
+  that claim the engine sends no typed text at all -- this is the piece that
+  makes an input editable, and it is also what lets the platform drive the IME;
+- typed characters then arrive through the scene's own text entry point
+  (`UIScene::handleTextChar`) and are routed to the focused widget;
+- the keyboard is released when focus leaves the field and when the window
+  closes, so the game's own text fields (chat) keep working;
+- Ctrl+C / Ctrl+X / Ctrl+V use the OS clipboard, because typing CJK still
+  depends on the engine's text services.
+
+A file input is different: the widget never opens a dialog. It reports
+`wantsFilePicker()`, the host opens `bul::platform::openFileDialog`, and the
+chosen path is handed back through `chooseFile`. The field itself shows the file
+name; `filePath()` keeps the full path.
+
+## Theming
+
+Every colour and metric is a `Theme` token with a neutral placeholder default
+(`bul::Theme::neutral()`). The input-specific tokens are `input`, `inputHover`,
+`inputBorder` and `invalid`; the rest are shared with the buttons and the panel.
+
+```cpp
+bul::Theme theme = bul::Theme::neutral();
+theme.accent = bul::Rgba::fromRgb(0x59A9FF);
+theme.input  = bul::Rgba::fromRgb(0x101319);
+bul::setTheme(theme);
+```

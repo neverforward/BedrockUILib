@@ -53,9 +53,9 @@ xmake build BedrockUILib
 - **F6** 开关面板；
 - **Esc** 关闭面板。
 
-面板是模态的：显示时取消 HUD 那一 pass（背景 HUD 消失）、铺一层遮罩，并吞掉键盘与鼠标事件
-（用 LL 的可取消事件 `KeyInputEvent` / `MouseInputEvent`），所以背后什么都不响应。面板在游戏自己的 UI 渲染过程里
-绘制，所以跟随界面缩放、并和其余 UI 一起排序。它要验证的东西列在
+面板打开的是一个画廊首页，点击按钮进入各组件自己的页面（Buttons、Input），每个页面就是该组件的参考文档，
+`Back` 返回首页。
+
 [docs/investigation-native-ui.md](docs/investigation-native-ui.md) 的 "Minimal runnable verification" 一节。
 
 ## 版本

@@ -36,6 +36,18 @@ namespace detail {
     return next;
 }
 
+/// Offset of the previous UTF-8 code point before `i`. Never splits a sequence.
+[[nodiscard]] constexpr std::size_t previousCodePoint(std::string_view text, std::size_t i) noexcept {
+    if (i == 0 || i > text.size()) {
+        return 0;
+    }
+    std::size_t start = i - 1;
+    while (start > 0 && (static_cast<unsigned char>(text[start]) & 0xC0u) == 0x80u) {
+        --start;
+    }
+    return start;
+}
+
 } // namespace detail
 
 /// Longest prefix of `text` that fits in `maxWidth` once `ellipsis` is appended,

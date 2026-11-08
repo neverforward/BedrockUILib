@@ -1,6 +1,8 @@
 #include "bul/modal/ModalInternal.h"
 
 #include <algorithm>
+#include <utility>
+#include <vector>
 
 #include "ll/api/event/EventBus.h"
 #include "ll/api/event/render/UIRenderEvent.h"
@@ -57,7 +59,7 @@ void drawModal(MinecraftUIRenderContext& context) {
 
     if (!loggedWindow) {
         loggedWindow = true;
-        log().info(
+        log().debug(
             "bul: window {:.0f}x{:.0f} of screen {:.0f}x{:.0f} at ({:.0f}, {:.0f})",
             width,
             height,
@@ -67,7 +69,7 @@ void drawModal(MinecraftUIRenderContext& context) {
             window.y
         );
         auto const sizes = context.mClient.getGuiData()->mScreenSizeData;
-        log().info(
+        log().debug(
             "bul: sizes total=({:.0f},{:.0f}) client=({:.0f},{:.0f}) ui=({:.0f},{:.0f}) scale={:.3f}",
             sizes->totalScreenSize->x,
             sizes->totalScreenSize->y,
@@ -83,16 +85,35 @@ void drawModal(MinecraftUIRenderContext& context) {
 } // namespace
 
 void renderModalFrame(MinecraftUIRenderContext& context) {
+    std::vector<EditAction> edits;
+    {
+        std::lock_guard lock{mutex};
+        if (!visible || !root) {
+            return;
+        }
+        // The stack may still reference the scene we just popped: release our copy a
+        // few frames later instead of immediately.
+        if (retiredScene && ++retiredFrames > 10) {
+            retiredScene.reset();
+            retiredFrames = 0;
+        }
+        edits.swap(pendingEdits);
+    }
+
+    // Applied here, on the thread that paints, so an edit that reallocates the
+    // value string can never run while the tree is being drawn. The callbacks
+    // run outside the lock: one of them may close the window.
+    for (auto& edit : edits) {
+        edit();
+    }
+
     std::lock_guard lock{mutex};
     if (!visible || !root) {
         return;
     }
-    // The stack may still reference the scene we just popped: release our copy a
-    // few frames later instead of immediately.
-    if (retiredScene && ++retiredFrames > 10) {
-        retiredScene.reset();
-        retiredFrames = 0;
-    }
+    // The platform keyboard follows the focused text field; without it the
+    // engine sends no typed text at all.
+    syncTextKeyboard();
     drawModal(context);
 }
 

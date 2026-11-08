@@ -84,6 +84,9 @@ target("BedrockUILib")
         add_cxflags(common_cxflags)
         add_cxflags(common_clang_flags)
         set_toolchains("clang-cl")
+        -- The clipboard, the modifier key state and the file dialog are plain
+        -- Win32; no engine API exposes any of them.
+        add_syslinks("user32", "comdlg32")
     end
     add_packages("levilamina")
     set_kind("shared")

@@ -28,16 +28,22 @@ public:
         mSize = value;
         return *this;
     }
+    Button& disabled(bool value) {
+        mLocalDisabled = value;
+        return *this;
+    }
 
     [[nodiscard]] Type type() const noexcept { return mType; }
     [[nodiscard]] Size size() const noexcept { return mSize; }
+    [[nodiscard]] bool disabled() const noexcept { return mLocalDisabled || mState.disabled; }
 
     // Qualified: Button::Size (the variant enum) shadows bul::Size inside the class.
     [[nodiscard]] bul::Size measure(float availableWidth, Theme const&, Canvas const&) const override;
-    void               paint(Canvas&, Theme const&) const override;
-    void               setHovered(bool hovered) override { mHovered = hovered; }
-    void               activate() override;
-    [[nodiscard]] bool interactive() const noexcept override { return true; }
+    void                    paint(Canvas&, Theme const&) const override;
+    void                    setHovered(bool hovered) override { mHovered = hovered; }
+    void                    activate() override;
+    [[nodiscard]] bool      interactive() const noexcept override { return !disabled(); }
+    void                    setControlState(ControlState const& state) override { mState = state; }
 
 private:
     struct Metrics {
@@ -52,6 +58,8 @@ private:
     std::function<void()> mOnClick;
     Type                  mType{Type::Default};
     Size                  mSize{Size::Default};
+    ControlState          mState{};
+    bool                  mLocalDisabled{};
     bool                  mHovered{};
 };
 

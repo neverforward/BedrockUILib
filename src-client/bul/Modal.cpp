@@ -18,6 +18,7 @@ bool showModal(std::unique_ptr<Widget> windowRoot) {
             return false;
         }
         detail::hovered = nullptr; // never keep a pointer into the previous tree
+        detail::focused = nullptr;
         detail::root    = std::move(windowRoot);
     }
     if (!detail::openHost()) {

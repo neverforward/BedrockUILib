@@ -1,5 +1,7 @@
 #include "bul/modal/ModalInternal.h"
 
+#include <utility>
+
 #include "ll/api/mod/NativeMod.h"
 
 #include "mc/client/game/ClientInstance.h"
@@ -25,9 +27,38 @@ bool                             loggedWindow{};
 bool                             loggedPushResult{};
 Theme                            theme = Theme::neutral();
 Widget*                          hovered{};
+Widget*                          focused{};
+bool                             keyboardOwned{};
+std::vector<EditAction>          pendingEdits;
 
 namespace {
 thread_local ::ScreenView* gOurView = nullptr;
+}
+
+void setFocus(Widget* target) {
+    if (focused == target) {
+        return;
+    }
+    if (focused) {
+        focused->setFocused(false);
+    }
+    focused = target;
+    if (focused) {
+        focused->setFocused(true);
+    }
+    // The platform keyboard follows focus at the next frame (syncTextKeyboard),
+    // not here: the engine call must not happen inside an input event.
+}
+
+void queueEdit(EditAction action) {
+    if (!action) {
+        return;
+    }
+    std::lock_guard lock{mutex};
+    if (state == Modality::Closed) {
+        return;
+    }
+    pendingEdits.push_back(std::move(action));
 }
 
 ::ScreenView*& ourView() { return gOurView; }

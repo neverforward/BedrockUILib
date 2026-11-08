@@ -58,11 +58,10 @@ Copy `bin/BedrockUILib/` into `<instance>/mods/BedrockUILib/`, launch, then:
 - **F6** toggles the panel;
 - **Esc** closes it.
 
-The panel is modal: while visible it cancels the HUD pass (so the background HUD
-is gone), draws a scrim, and swallows keyboard and mouse through LL's
-cancellable `KeyInputEvent` / `MouseInputEvent`, so nothing behind it reacts. The panel is drawn inside the game's UI
-pass, so it follows the GUI scale and is ordered with the rest of the UI. What it
-is meant to prove is listed in
+The panel opens on a gallery home page that routes to one page per component
+(Buttons, Input); each page is the reference for that component, `Back` returns
+to the home page.
+
 [docs/investigation-native-ui.md](docs/investigation-native-ui.md) under
 "Minimal runnable verification".
 
