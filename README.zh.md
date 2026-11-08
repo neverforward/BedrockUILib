@@ -53,7 +53,7 @@ xmake build BedrockUILib
 - **F6** 开关面板；
 - **Esc** 关闭面板。
 
-面板打开的是一个画廊首页，点击按钮进入各组件自己的页面（Buttons、Input、Select），每个页面就是该组件的参考文档，
+面板打开的是一个画廊首页，点击按钮进入各组件自己的页面（Buttons、Input、Select、Checkbox），每个页面就是该组件的参考文档，
 `Back` 返回首页。
 
 [docs/investigation-native-ui.md](docs/investigation-native-ui.md) 的 "Minimal runnable verification" 一节。

@@ -26,6 +26,8 @@ under `### Changed`.
   public headers and links `BedrockUILib.lib`.
 - `Select`: a dropdown whose popup is painted above the tree by the host
   (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
+- `Checkbox`: a box with an inline label (`checked` / `onCheckedChange`,
+  `indeterminate`, `readOnly`).
 - Engine adapter (`Painter`, `GameCanvas`) and the modal host (`showModal`,
   `closeModal`, `modalVisible`, `setTheme`, `theme`).
 

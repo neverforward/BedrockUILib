@@ -6,6 +6,7 @@
 
 #include "bul/widget/Badge.h"
 #include "bul/widget/Button.h"
+#include "bul/widget/Checkbox.h"
 #include "bul/widget/Field.h"
 #include "bul/widget/FieldDescription.h"
 #include "bul/widget/FieldLabel.h"
