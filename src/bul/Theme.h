@@ -1,13 +1,14 @@
 #pragma once
 
 #include "bul/Color.h"
+#include "bul/Export.h"
 
 namespace bul {
 
 /// Visual tokens. Every value here is a placeholder default: the library has no
 /// look of its own, consumers override what they care about. Colours are
 /// straight RGBA in [0, 1].
-struct Theme {
+struct BUL_API Theme {
     Rgba text{};
     Rgba textMuted{};
     Rgba panel{};

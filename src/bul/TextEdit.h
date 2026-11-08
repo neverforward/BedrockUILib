@@ -4,6 +4,8 @@
 #include <string>
 #include <string_view>
 
+#include "bul/Export.h"
+
 namespace bul {
 
 /// The editing state behind `Input`: one line of UTF-8 text, a caret and a
@@ -16,7 +18,7 @@ namespace bul {
 ///
 /// Pure data with no drawing and no engine types, so every editing rule is
 /// unit-tested without a game.
-class TextEdit {
+class BUL_API TextEdit {
 public:
     /// Replaces the text and puts the caret at its end.
     void setText(std::string text);

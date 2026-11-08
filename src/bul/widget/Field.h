@@ -18,7 +18,7 @@ namespace bul {
 /// The state a field carries is imposed on its children through
 /// `setControlState`, so `field.disabled(true)` dims and disables the control,
 /// the label and the description without each of them being told separately.
-class Field final : public Widget {
+class BUL_API Field final : public Widget {
 public:
     enum class Orientation { Vertical, Horizontal };
 

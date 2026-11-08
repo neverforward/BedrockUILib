@@ -12,7 +12,7 @@ namespace bul {
 ///
 /// The marker is drawn in `Theme::invalid`; the badge is any widget and sits
 /// after the text, vertically centred, so `Badge` is the intended payload.
-class FieldLabel final : public Widget {
+class BUL_API FieldLabel final : public Widget {
 public:
     explicit FieldLabel(std::string text, float scale = 1.f);
 

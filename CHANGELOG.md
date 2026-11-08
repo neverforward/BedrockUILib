@@ -22,6 +22,8 @@ under `### Changed`.
   claims the platform keyboard while a field has focus.
 - Native file dialog for file inputs, `docs/components.md` and the gallery demo
   (F6 in `--tests=y` builds).
+- Public C++ API exported for consumer mods (`BUL_API`): another mod includes the
+  public headers and links `BedrockUILib.lib`.
 - Engine adapter (`Painter`, `GameCanvas`) and the modal host (`showModal`,
   `closeModal`, `modalVisible`, `setTheme`, `theme`).
 

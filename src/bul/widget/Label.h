@@ -7,7 +7,7 @@
 namespace bul {
 
 /// A single line of text.
-class Label final : public Widget {
+class BUL_API Label final : public Widget {
 public:
     explicit Label(std::string text, float scale = 1.f, Align align = Align::Left);
 

@@ -92,7 +92,7 @@ target("BedrockUILib")
     set_kind("shared")
     set_languages("c++20")
     set_symbols("debug")
-    add_defines("BUL_TARGET_CLIENT")
+    add_defines("BUL_TARGET_CLIENT", "BUL_BUILD")
 
     -- src/        pure logic: no mc/ or ll/ includes, unit-tested by the test target.
     -- src-client/ engine adapters: render context, input routing, screen host, mod entry.
@@ -173,7 +173,7 @@ if has_config("tests") then
         set_languages("c++20")
         set_symbols("debug")
         add_packages("gtest", "levilamina")
-        add_defines("LL_DEBUG", "BUL_TARGET_CLIENT")
+        add_defines("LL_DEBUG", "BUL_TARGET_CLIENT", "BUL_BUILD")
         add_includedirs("build/generated")
         add_includedirs("src")
         add_includedirs("src-client")

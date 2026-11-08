@@ -21,7 +21,7 @@ namespace bul {
 /// focus (`setFocused`), routes strokes through `key` and typed characters
 /// through `textInput`. That split keeps the widget free of the SDK and fully
 /// testable with a recording canvas.
-class Input final : public Widget {
+class BUL_API Input final : public Widget {
 public:
     enum class Kind { Text, Password, Search, File };
 

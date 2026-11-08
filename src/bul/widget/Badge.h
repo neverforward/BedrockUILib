@@ -9,7 +9,7 @@ namespace bul {
 
 /// A small label that annotates other content, e.g. a "Recommended" marker next
 /// to a field label. It is decoration only: not focusable and not interactive.
-class Badge final : public Widget {
+class BUL_API Badge final : public Widget {
 public:
     enum class Variant { Default, Secondary, Outline, Destructive };
 

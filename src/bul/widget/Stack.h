@@ -12,7 +12,7 @@ namespace bul {
 /// A child added with a positive stretch factor grows along the main axis when
 /// the stack is given more room than its children need -- the "the input takes
 /// the rest of the row" case of an inline search field.
-class Stack final : public Widget {
+class BUL_API Stack final : public Widget {
 public:
     enum class Direction { Vertical, Horizontal };
 

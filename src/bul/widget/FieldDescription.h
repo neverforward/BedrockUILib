@@ -9,7 +9,7 @@ namespace bul {
 
 /// The helper line under a field's control. Muted and slightly smaller than the
 /// label; dims with the field when it is disabled.
-class FieldDescription final : public Widget {
+class BUL_API FieldDescription final : public Widget {
 public:
     explicit FieldDescription(std::string text, float scale = 0.85f);
 

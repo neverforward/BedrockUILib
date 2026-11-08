@@ -13,7 +13,7 @@ namespace bul {
 /// secondary one, a destructive one for actions that delete, an outlined one on
 /// a transparent surface, and a link that is text only. `Size` changes the text
 /// scale and the padding, not the colour.
-class Button final : public Widget {
+class BUL_API Button final : public Widget {
 public:
     enum class Type { Default, Secondary, Destructive, Outline, Link };
     enum class Size { XSmall, Small, Default, Large };

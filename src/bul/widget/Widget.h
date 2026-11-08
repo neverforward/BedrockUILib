@@ -6,6 +6,7 @@
 
 #include "bul/Canvas.h"
 #include "bul/Geometry.h"
+#include "bul/Export.h"
 
 namespace bul {
 
@@ -46,7 +47,7 @@ struct KeyStroke {
 /// asks each child for its desired size, then arranges the children inside its
 /// own bounds. Widgets only paint through `Canvas`, so the same tree can be
 /// driven by the game, a test recorder, or an offline previewer.
-class Widget {
+class BUL_API Widget {
 public:
     Widget()                         = default;
     Widget(Widget const&)            = delete;

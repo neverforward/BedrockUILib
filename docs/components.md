@@ -146,3 +146,21 @@ theme.accent = bul::Rgba::fromRgb(0x59A9FF);
 theme.input  = bul::Rgba::fromRgb(0x101319);
 bul::setTheme(theme);
 ```
+
+## Consuming from another mod
+
+The library is a DLL with an exported C++ API: every public class and function
+carries `BUL_API` (`bul/Export.h`), and the build generates an import library
+next to the dll. A consumer mod
+
+- adds `src/` and `src-client/` of this repository to its include path,
+- links `BedrockUILib.lib`, and
+- is built with the same compiler toolchain and LeviLamina SDK version, because
+  the C++ ABI crosses the dll boundary.
+
+The consumer's dll then lists `BedrockUILib.dll` as a dependency, so the library
+must be loaded first (its mod folder name, `BedrockUILib`, sorts before a
+consumer folder named after it). A smoke-test project created from LeviLamina's
+mod template lives outside this repository: it builds a small window from
+`Label` / `Field` / `Input` / `Button` and opens it with F7.
+
