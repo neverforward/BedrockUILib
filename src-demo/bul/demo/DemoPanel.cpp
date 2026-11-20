@@ -38,7 +38,7 @@ ll::event::ListenerPtr gJoinListener;
 
 [[nodiscard]] ll::io::Logger& log() { return BedrockUILib::getInstance().getSelf().getLogger(); }
 
-enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2, Select = 3, Checkbox = 4, Radio = 5 };
+enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2, Select = 3, Checkbox = 4, Radio = 5, Text = 6 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
 /// forwarded to it. Keeping it in the demo leaves the library free of navigation
@@ -143,6 +143,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Select", Page::Select);
     entry("Checkbox", Page::Checkbox);
     entry("Radio", Page::Radio);
+    entry("Text", Page::Text);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -534,6 +535,86 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     return page("Radio", "One option out of a group; the dot marks it.", std::move(body), back);
 }
 
+// --------------------------------------------------------------------- text page
+
+[[nodiscard]] std::unique_ptr<Widget> textPage(std::function<void()> back) {
+    auto left = column(6.f);
+    left->add(caption("size"));
+    {
+        auto small = std::make_unique<Label>("Small caption", 0.85f);
+        small->muted();
+        left->add(std::move(small));
+    }
+    left->add(std::make_unique<Label>("Body text"));
+    left->add(std::make_unique<Label>("Section title", 1.2f));
+    left->add(std::make_unique<Label>("Display", 1.6f));
+
+    auto right = column(6.f);
+    right->add(caption("align"));
+    right->add(std::make_unique<Label>("Left", 1.f, Align::Left));
+    right->add(std::make_unique<Label>("Center", 1.f, Align::Center));
+    right->add(std::make_unique<Label>("Right", 1.f, Align::Right));
+
+    auto grid = row(10.f);
+    grid->add(std::move(left), 1.f);
+    grid->add(std::move(right), 1.f);
+
+    auto colorBlock = column(6.f);
+    colorBlock->add(caption("color"));
+    {
+        auto colorRow = row(10.f);
+        auto accent   = std::make_unique<Label>("Accent");
+        accent->color(Theme::neutral().accent);
+        colorRow->add(std::move(accent));
+        auto danger = std::make_unique<Label>("Invalid");
+        danger->color(Theme::neutral().invalid);
+        colorRow->add(std::move(danger));
+        auto success = std::make_unique<Label>("Success");
+        success->color(Rgba::fromRgb(0x46A758));
+        colorRow->add(std::move(success));
+        colorBlock->add(std::move(colorRow));
+    }
+
+    auto wrapRow = row(10.f);
+    auto english = column(6.f);
+    english->add(caption("wrap: spaces"));
+    {
+        auto sentence =
+            std::make_unique<Label>("Word wrap breaks the text at spaces, so a long sentence stays inside its column.");
+        sentence->wrap(true);
+        sentence->maxWidth(120.f);
+        english->add(std::move(sentence));
+    }
+    auto chinese = column(6.f);
+    chinese->add(caption("wrap: CJK"));
+    {
+        auto sentence = std::make_unique<Label>("中文没有空格，换行会在任意两个字之间断开，避免整段溢出。");
+        sentence->wrap(true);
+        sentence->maxWidth(120.f);
+        chinese->add(std::move(sentence));
+    }
+    wrapRow->add(std::move(english), 1.f);
+    wrapRow->add(std::move(chinese), 1.f);
+
+    auto limited = column(6.f);
+    limited->add(caption("maxLines(2)"));
+    {
+        auto paragraph = std::make_unique<Label>(
+            "A capped block shows two lines and then an ellipsis, so a list of cards keeps the same height."
+        );
+        paragraph->wrap(true);
+        paragraph->maxWidth(250.f);
+        paragraph->maxLines(2);
+        limited->add(std::move(paragraph));
+    }
+
+    auto body = column(8.f);
+    body->add(std::move(grid));
+    body->add(std::move(colorBlock));
+    body->add(std::move(wrapRow));
+    body->add(std::move(limited));
+    return page("Text", "Label: sizes, alignment and word wrap.", std::move(body), back);
+}
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -548,6 +629,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(selectPage(back));
     view->add(checkboxPage(back));
     view->add(radioPage(back));
+    view->add(textPage(back));
     return router;
 }
 
