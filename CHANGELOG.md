@@ -28,6 +28,7 @@ under `### Changed`.
   (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
 - `Checkbox`: a box with an inline label (`checked` / `onCheckedChange`,
   `indeterminate`, `readOnly`).
+- `bul::spec`: declarative trees (`spec::Stack`, `spec::Field`, ... built with `spec::build` / `spec::node`), sharing the `Widget` base properties.
 - `Switch`: an on/off track with a thumb (`text`, `checked` / `onCheckedChange`, `readOnly`).
 - `RadioGroup`: radio buttons with one choice (`add`, `value` /
   `onValueChange`, `readOnly`); arrow keys move the selection.

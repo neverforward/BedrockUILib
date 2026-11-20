@@ -1,0 +1,177 @@
+#include "gtest/gtest.h"
+
+#include <memory>
+#include <string>
+
+#include "FakeCanvas.h"
+
+#include "bul/Spec.h"
+#include "bul/Theme.h"
+
+namespace {
+
+[[nodiscard]] bul::Theme testTheme() {
+    bul::Theme theme = bul::Theme::neutral();
+    theme.fontScale  = 1.f;
+    theme.gap        = 6.f;
+    return theme;
+}
+
+} // namespace
+
+TEST(Spec, BuildsALabel) {
+    bul::test::FakeCanvas canvas;
+    bul::Theme const      theme = testTheme();
+
+    auto tree = bul::spec::build(
+        bul::spec::Label{
+            .text = "Hello",
+            .font = {.size = 2.f},
+        }
+    );
+    auto* label = dynamic_cast<bul::Label*>(tree.get());
+    ASSERT_NE(label, nullptr);
+    EXPECT_EQ(label->text(), "Hello");
+
+    bul::Size const size = tree->measure(0.f, theme, canvas);
+    EXPECT_FLOAT_EQ(size.width, 60.f); // five code points at double size
+    EXPECT_FLOAT_EQ(size.height, 18.f);
+}
+
+TEST(Spec, AppliesTheCommonProperties) {
+    bul::test::FakeCanvas canvas;
+    bul::Theme const      theme = testTheme();
+
+    int  clicks = 0;
+    auto tree   = bul::spec::build(
+        bul::spec::Label{
+            .common = {.fixedWidth = 50.f, .fixedHeight = 20.f, .onClick = [&clicks] { ++clicks; }},
+            .text   = "Hello",
+    }
+    );
+
+    bul::Size const size = tree->measure(0.f, theme, canvas);
+    EXPECT_FLOAT_EQ(size.width, 50.f);
+    EXPECT_FLOAT_EQ(size.height, 20.f);
+    EXPECT_TRUE(tree->interactive());
+
+    tree->layout({0.f, 0.f, 100.f, 40.f}, theme, canvas);
+    tree->notifyClick({5.f, 5.f});
+    EXPECT_EQ(clicks, 1);
+}
+
+TEST(Spec, BuildsAStackOfChildren) {
+    bul::test::FakeCanvas canvas;
+    bul::Theme const      theme = testTheme();
+
+    auto tree = bul::spec::build(
+        bul::spec::Stack{
+            .direction = bul::spec::Stack::Direction::Vertical,
+            .gap       = 6.f,
+            .children  = {
+                          bul::spec::node(bul::spec::Label{.text = "Hello"}),
+                          bul::spec::node(bul::spec::Label{.text = "World"}),
+                          },
+    }
+    );
+
+    bul::Size const size = tree->measure(0.f, theme, canvas);
+    EXPECT_FLOAT_EQ(size.width, 30.f);
+    EXPECT_FLOAT_EQ(size.height, 24.f); // 9 + 6 + 9
+
+    tree->layout({0.f, 0.f, 100.f, 24.f}, theme, canvas);
+    bul::test::FakeCanvas painted;
+    tree->paint(painted, theme);
+    ASSERT_EQ(painted.texts.size(), 2u);
+    EXPECT_EQ(painted.texts[0].value, "Hello");
+    EXPECT_EQ(painted.texts[1].value, "World");
+    EXPECT_FLOAT_EQ(painted.texts[1].topLeft.y, 15.f);
+}
+
+TEST(Spec, BuildsAFieldWithAControl) {
+    bul::test::FakeCanvas canvas;
+    bul::Theme const      theme = testTheme();
+
+    auto tree = bul::spec::build(
+        bul::spec::Field{
+            .label       = "Email",
+            .control     = bul::spec::node(bul::spec::Input{.placeholder = "you@example.com"}),
+            .description = "Hint",
+        }
+    );
+    auto* field = dynamic_cast<bul::Field*>(tree.get());
+    ASSERT_NE(field, nullptr);
+    EXPECT_NE(field->controlWidget(), nullptr);
+    EXPECT_NE(field->descriptionWidget(), nullptr);
+
+    bul::Size const size = tree->measure(0.f, theme, canvas);
+    EXPECT_GT(size.height, 19.f); // label + gap + input + gap + hint
+
+    tree->layout({0.f, 0.f, 200.f, size.height}, theme, canvas);
+    bul::test::FakeCanvas painted;
+    tree->paint(painted, theme);
+    EXPECT_FALSE(painted.texts.empty());
+}
+
+TEST(Spec, BuildsAFormOfFields) {
+    bul::test::FakeCanvas canvas;
+    bul::Theme const      theme = testTheme();
+
+    auto tree = bul::spec::build(
+        bul::spec::Stack{
+            .direction = bul::spec::Stack::Direction::Vertical,
+            .gap       = 8.f,
+            .children  = {
+                          bul::spec::node(bul::spec::Label{.text = "Settings", .font = {.size = 1.2f}}),
+                          bul::spec::node(
+                    bul::spec::Field{
+                        .label   = "Name",
+                        .control = bul::spec::node(bul::spec::Input{.placeholder = "Your name"}),
+                    }
+                ), bul::spec::node(bul::spec::Switch{.text = "Wi-Fi", .checked = true}),
+                          },
+    }
+    );
+
+    bul::Size const size = tree->measure(200.f, theme, canvas);
+    EXPECT_FLOAT_EQ(size.width, 120.f); // the column reports its widest child (the input)
+    EXPECT_GT(size.height, 40.f);
+
+    tree->layout({0.f, 0.f, 200.f, size.height}, theme, canvas);
+    bul::test::FakeCanvas painted;
+    tree->paint(painted, theme);
+    EXPECT_FALSE(painted.texts.empty());
+}
+
+TEST(Spec, BuildsTheStatefulControls) {
+    auto  checkbox = bul::spec::build(bul::spec::Checkbox{.text = "Accept", .checked = true});
+    auto* box      = dynamic_cast<bul::Checkbox*>(checkbox.get());
+    ASSERT_NE(box, nullptr);
+    EXPECT_TRUE(box->checked());
+
+    auto  switchWidget = bul::spec::build(bul::spec::Switch{.text = "Wi-Fi"});
+    auto* on           = dynamic_cast<bul::Switch*>(switchWidget.get());
+    ASSERT_NE(on, nullptr);
+    EXPECT_FALSE(on->checked());
+
+    auto select = bul::spec::build(
+        bul::spec::Select{
+            .placeholder = "Choose",
+            .value       = "b",
+            .items       = {{"a", "Apple"}, {"b", "Banana"}},
+    }
+    );
+    auto* dropdown = dynamic_cast<bul::Select*>(select.get());
+    ASSERT_NE(dropdown, nullptr);
+    EXPECT_EQ(dropdown->value(), "b");
+
+    auto group = bul::spec::build(
+        bul::spec::RadioGroup{
+            .value   = "two",
+            .options = {{"one", "One"}, {"two", "Two"}},
+    }
+    );
+    auto* radios = dynamic_cast<bul::RadioGroup*>(group.get());
+    ASSERT_NE(radios, nullptr);
+    EXPECT_EQ(radios->value(), "two");
+}

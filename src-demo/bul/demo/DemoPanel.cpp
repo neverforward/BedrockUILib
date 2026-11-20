@@ -20,6 +20,7 @@
 #include "ll/api/i18n/I18n.h"
 
 #include "bul/Modal.h"
+#include "bul/Spec.h"
 #include "bul/Theme.h"
 #include "bul/Widget.h"
 #include "mod/Mod.h"
@@ -47,7 +48,8 @@ enum class Page : std::size_t {
     Radio    = 5,
     Text     = 6,
     Widget   = 7,
-    Switch   = 8
+    Switch   = 8,
+    Spec     = 9
 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
@@ -156,6 +158,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Text", Page::Text);
     entry("Widget", Page::Widget);
     entry("Switch", Page::Switch);
+    entry("Spec", Page::Spec);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -715,6 +718,41 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     body->add(std::move(grid));
     return page("Switch", "A track with a thumb; the colour shows the state.", std::move(body), back);
 }
+// --------------------------------------------------------------------- spec page
+
+[[nodiscard]] std::unique_ptr<Widget> specPage(std::function<void()> back) {
+    auto tree = bul::spec::build(
+        bul::spec::Stack{
+            .direction = bul::spec::Stack::Direction::Vertical,
+            .gap       = 8.f,
+            .children  = {
+                          bul::spec::node(
+                    bul::spec::Label{
+                        .text  = "This page is a struct tree.",
+                        .font  = {.size = 1.05f},
+                        .muted = true,
+                    }
+                ), bul::spec::node(
+                    bul::spec::Field{
+                        .label       = "Name",
+                        .description = "Field + Input, built by the spec.",
+                        .control     = bul::spec::node(bul::spec::Input{.placeholder = "Ada Lovelace"}),
+                    }
+                ), bul::spec::node(bul::spec::Switch{.text = "Notifications", .checked = true}),
+                          bul::spec::node(bul::spec::Checkbox{.text = "Accept terms"}),
+                          bul::spec::node(
+                    bul::spec::Button{
+                        .text    = "Built by a spec",
+                        .onClick = [] { log().debug("demo: spec button pressed"); },
+                    }
+                ), },
+    }
+    );
+
+    auto body = column(8.f);
+    body->add(std::move(tree));
+    return page("Spec", "A tree built from structs, not make_unique chains.", std::move(body), back);
+}
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -732,6 +770,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(textPage(back));
     view->add(widgetPage(back));
     view->add(switchPage(back));
+    view->add(specPage(back));
     return router;
 }
 
