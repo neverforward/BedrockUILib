@@ -56,17 +56,17 @@ public:
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
-    void                  layout(Rect const& outer, Theme const&, Canvas const&) override;
-    void                  paint(Canvas&, Theme const&) const override;
-    void                  setHovered(bool hovered) override { mHovered = hovered; }
-    void                  setPointer(Point point) override { mPointer = point; }
-    void                  activate() override;
-    void                  activateAt(Point point) override;
-    [[nodiscard]] bool    interactive() const noexcept override { return !disabled(); }
-    [[nodiscard]] bool    focusable() const noexcept override { return !disabled(); }
-    void                  setFocused(bool focused) override { mFocused = focused; }
-    bool                  key(KeyStroke const& stroke) override;
-    void                  setControlState(ControlState const& state) override { mState = state; }
+    void               layout(Rect const& outer, Theme const&, Canvas const&) override;
+    void               paint(Canvas&, Theme const&) const override;
+    void               setHovered(bool hovered) override { mHovered = hovered; }
+    void               setPointer(Point point) override { mPointer = point; }
+    void               activate() override;
+    void               activateAt(Point point) override;
+    [[nodiscard]] bool interactive() const noexcept override { return !disabled(); }
+    [[nodiscard]] bool focusable() const noexcept override { return !disabled(); }
+    void               setFocused(bool focused) override { mFocused = focused; }
+    bool               key(KeyStroke const& stroke) override;
+    void               setControlState(ControlState const& state) override { mState = state; }
 
     // The open popup participates in the host's overlay pass.
     void                  collectOverlays(std::vector<Widget*>& out) override;

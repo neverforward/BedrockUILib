@@ -260,6 +260,32 @@ toggles while the checkbox has focus; a click anywhere in the widget -- box or
 label -- toggles it. The tick is drawn as pixels, so it stays crisp at any GUI
 scale.
 
+## Switch
+
+An on/off switch: HTML's `input[type=checkbox][role=switch]` and Qt Quick's
+`Switch` in one widget. The track colour carries the state, like the checkbox.
+
+```cpp
+auto switchWidget = std::make_unique<bul::Switch>();
+switchWidget->text("Wi-Fi");
+switchWidget->onCheckedChange([](bool value) { /* the new state */ });
+field->control(std::move(switchWidget));
+```
+
+| Member | Meaning |
+| --- | --- |
+| `text(t)` | The inline label drawn right of the track. |
+| `checked(b)` / `checked()` | The state. Setting it is programmatic and does not fire `onCheckedChange`. |
+| `onCheckedChange(fn)` | Fires when a click or Space flips the state. |
+| `readOnly(true)` | Focusable, but the state cannot change. |
+| `disabled(true)` / `required(true)` / `invalid(true)` | The usual control states; the field can impose them too. |
+
+The track is 22 x 12 units and the thumb is a 10-unit pixel circle: it sits on
+the left on the raised surface (`Theme::button`) and on the right on
+`Theme::accent` once the switch is on. Space toggles while the switch has focus;
+a click anywhere -- track or label -- flips it. Invalid tints the off track red
+and paints the on track in `Theme::invalid` itself.
+
 ## Radio group
 
 Radio buttons with exactly one choice; every option is `Radio.Root` with its

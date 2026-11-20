@@ -28,12 +28,12 @@ under `### Changed`.
   (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
 - `Checkbox`: a box with an inline label (`checked` / `onCheckedChange`,
   `indeterminate`, `readOnly`).
+- `Switch`: an on/off track with a thumb (`text`, `checked` / `onCheckedChange`, `readOnly`).
 - `RadioGroup`: radio buttons with one choice (`add`, `value` /
   `onValueChange`, `readOnly`); arrow keys move the selection.
 - `Label`: sizes, alignment, word wrap (spaces and CJK), line spacing, `maxLines` with an ellipsis, `maxWidth` and an explicit text colour.
 - `Widget` base gained `fixedSize` / `minSize` / `maxSize`, the `size()` getters
   and the `onClick` / `onFocus` / `onBlur` / `onHover` handlers.
-- `Widget` base gained `fixedSize` / `minSize` / `maxSize`, the `size()` getters and the `onClick` / `onFocus` / `onBlur` / `onHover` handlers.
 - Engine adapter (`Painter`, `GameCanvas`) and the modal host (`showModal`,
   `closeModal`, `modalVisible`, `setTheme`, `theme`).
 

@@ -15,4 +15,5 @@
 #include "bul/widget/RadioGroup.h"
 #include "bul/widget/Select.h"
 #include "bul/widget/Stack.h"
+#include "bul/widget/Switch.h"
 #include "bul/widget/Widget.h"

@@ -11,7 +11,7 @@
 // toolchain pair as the library. `bul::abiVersion` (bul/Version.h) marks the
 // generation that may change layout.
 #if defined(BUL_BUILD)
-#    define BUL_API __declspec(dllexport)
+#define BUL_API __declspec(dllexport)
 #else
-#    define BUL_API __declspec(dllimport)
+#define BUL_API __declspec(dllimport)
 #endif

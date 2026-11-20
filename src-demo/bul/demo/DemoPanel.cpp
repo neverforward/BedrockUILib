@@ -46,7 +46,8 @@ enum class Page : std::size_t {
     Checkbox = 4,
     Radio    = 5,
     Text     = 6,
-    Widget   = 7
+    Widget   = 7,
+    Switch   = 8
 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
@@ -154,6 +155,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Radio", Page::Radio);
     entry("Text", Page::Text);
     entry("Widget", Page::Widget);
+    entry("Switch", Page::Switch);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -662,6 +664,57 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
 
     return page("Widget", "The base class: size constraints and events.", std::move(body), back);
 }
+// ------------------------------------------------------------------- switch page
+
+[[nodiscard]] std::unique_ptr<Switch> makeSwitch(std::string text, bool checked = false) {
+    auto switchWidget = std::make_unique<Switch>();
+    switchWidget->text(std::move(text));
+    switchWidget->checked(checked);
+    return switchWidget;
+}
+
+[[nodiscard]] std::unique_ptr<Widget> switchPage(std::function<void()> back) {
+    auto left = column(8.f);
+    {
+        auto basic = makeSwitch("Wi-Fi");
+        basic->onCheckedChange([](bool value) { log().debug("demo: wifi={}", value); });
+        left->add(std::move(basic));
+        left->add(makeSwitch("Bluetooth", true));
+        auto disabled = row(8.f);
+        auto off      = makeSwitch("Off");
+        off->disabled(true);
+        auto on = makeSwitch("On", true);
+        on->disabled(true);
+        disabled->add(std::move(off));
+        disabled->add(std::move(on));
+        left->add(std::move(disabled));
+    }
+
+    auto right = column(8.f);
+    {
+        auto field = std::make_unique<Field>();
+        field->label("Notifications");
+        field->invalid(true);
+        field->control(makeSwitch("Email me"));
+        field->description("Field invalid is red.");
+        right->add(std::move(field));
+    }
+    {
+        auto field = std::make_unique<Field>();
+        field->label("Airplane mode");
+        field->required(true);
+        field->control(makeSwitch("On"));
+        right->add(std::move(field));
+    }
+
+    auto grid = row(10.f);
+    grid->add(std::move(left), 1.f);
+    grid->add(std::move(right), 1.f);
+
+    auto body = column(8.f);
+    body->add(std::move(grid));
+    return page("Switch", "A track with a thumb; the colour shows the state.", std::move(body), back);
+}
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -678,6 +731,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(radioPage(back));
     view->add(textPage(back));
     view->add(widgetPage(back));
+    view->add(switchPage(back));
     return router;
 }
 
