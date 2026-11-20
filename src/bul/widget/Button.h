@@ -38,7 +38,7 @@ public:
     [[nodiscard]] bool disabled() const noexcept { return mLocalDisabled || mState.disabled; }
 
     // Qualified: Button::Size (the variant enum) shadows bul::Size inside the class.
-    [[nodiscard]] bul::Size measure(float availableWidth, Theme const&, Canvas const&) const override;
+    [[nodiscard]] bul::Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void                    paint(Canvas&, Theme const&) const override;
     void                    setHovered(bool hovered) override { mHovered = hovered; }
     void                    activate() override;

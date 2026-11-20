@@ -60,11 +60,11 @@ void drawModal(MinecraftUIRenderContext& context) {
         hoverTarget       = (hit != nullptr && hit->interactive()) ? hit : nullptr;
     }
     if (hovered && hovered != hoverTarget) {
-        hovered->setHovered(false);
+        hovered->notifyHover(false);
     }
     hovered = hoverTarget;
     if (hovered) {
-        hovered->setHovered(true);
+        hovered->notifyHover(true);
         hovered->setPointer(pointer);
     }
 

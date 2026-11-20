@@ -221,7 +221,7 @@ Label& Label::elide(bool value) noexcept {
     return *this;
 }
 
-Size Label::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size Label::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     float const      size   = theme.fontScale * mScale;
     TextLayout const layout = buildLayout(
         canvas,

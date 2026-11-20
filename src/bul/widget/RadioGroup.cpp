@@ -53,7 +53,7 @@ public:
     [[nodiscard]] bool               checked() const noexcept { return mGroup.value() == mValue; }
     [[nodiscard]] bool               disabled() const noexcept { return mLocalDisabled || mGroup.disabled(); }
 
-    [[nodiscard]] Size measure(float availableWidth, Theme const& theme, Canvas const& canvas) const override {
+    [[nodiscard]] Size measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const override {
         float const scale      = theme.fontScale;
         float const lineHeight = canvas.lineHeight(scale);
         float const height     = std::max(kDisc, lineHeight);
@@ -231,7 +231,7 @@ void RadioGroup::move(int step) {
     }
 }
 
-Size RadioGroup::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size RadioGroup::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     bool const  vertical = mDirection == Stack::Direction::Vertical;
     float const gap      = mGap >= 0.f ? mGap : theme.gap;
     float       main     = 0.f;

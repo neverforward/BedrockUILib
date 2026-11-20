@@ -91,7 +91,7 @@ void Field::propagate() {
 
 float Field::gapOf(Theme const&) const noexcept { return mGap >= 0.f ? mGap : kFieldGap; }
 
-Size Field::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size Field::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     float const gap = gapOf(theme);
 
     if (mOrientation == Orientation::Horizontal) {

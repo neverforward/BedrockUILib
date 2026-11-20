@@ -77,7 +77,7 @@ public:
         return *this;
     }
 
-    [[nodiscard]] Size measure(float availableWidth, Theme const&, Canvas const&) const override;
+    [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paint(Canvas&, Theme const&) const override;
 
 private:

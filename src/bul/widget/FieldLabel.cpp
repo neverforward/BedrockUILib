@@ -30,7 +30,7 @@ float FieldLabel::textWidth(Theme const& theme, Canvas const& canvas) const noex
     return width;
 }
 
-Size FieldLabel::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size FieldLabel::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     float const scale  = theme.fontScale * mScale;
     float       width  = textWidth(theme, canvas);
     float       height = canvas.lineHeight(scale);

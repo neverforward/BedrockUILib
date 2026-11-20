@@ -8,7 +8,7 @@ namespace bul {
 
 FieldDescription::FieldDescription(std::string text, float scale) : mText(std::move(text)), mScale(scale) {}
 
-Size FieldDescription::measure(float, Theme const& theme, Canvas const& canvas) const {
+Size FieldDescription::measureContent(float, Theme const& theme, Canvas const& canvas) const {
     float const scale = theme.fontScale * mScale;
     return {canvas.textWidth(mText, scale) + mMargin.horizontal(), canvas.lineHeight(scale) + mMargin.vertical()};
 }

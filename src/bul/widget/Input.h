@@ -63,7 +63,7 @@ public:
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
     [[nodiscard]] bool focused() const noexcept { return mFocused; }
 
-    [[nodiscard]] Size        measure(float availableWidth, Theme const&, Canvas const&) const override;
+    [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void                      layout(Rect const& outer, Theme const&, Canvas const&) override;
     void                      paint(Canvas&, Theme const&) const override;
     void                      setHovered(bool hovered) override { mHovered = hovered; }

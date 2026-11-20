@@ -84,7 +84,7 @@ void Checkbox::toggle() {
     }
 }
 
-Size Checkbox::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size Checkbox::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     float const scale      = theme.fontScale;
     float const lineHeight = canvas.lineHeight(scale);
     float const height     = std::max(kBox, lineHeight);

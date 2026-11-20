@@ -16,7 +16,7 @@ constexpr float kScale = 0.75f;
 
 Badge::Badge(std::string text, Variant variant) : mText(std::move(text)), mVariant(variant) {}
 
-Size Badge::measure(float, Theme const& theme, Canvas const& canvas) const {
+Size Badge::measureContent(float, Theme const& theme, Canvas const& canvas) const {
     float const scale = theme.fontScale * kScale;
     return {
         canvas.textWidth(mText, scale) + 2.f * kPadX + mMargin.horizontal(),

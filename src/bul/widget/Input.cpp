@@ -139,7 +139,7 @@ Rect Input::textArea(Metrics const& metrics) const noexcept {
     };
 }
 
-Size Input::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size Input::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     Metrics const metrics = this->metrics(theme);
     float const   height  = canvas.lineHeight(metrics.scale) + 2.f * metrics.padY + 2.f * kBorder;
 

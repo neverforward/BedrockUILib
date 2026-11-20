@@ -16,7 +16,7 @@ Stack& Stack::add(std::unique_ptr<Widget> child, float stretch) {
     return *this;
 }
 
-Size Stack::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size Stack::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     float const gap   = mGap >= 0.f ? mGap : theme.gap;
     float       main  = 0.f;
     float       cross = 0.f;

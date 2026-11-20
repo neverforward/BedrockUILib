@@ -13,7 +13,7 @@ class BUL_API FieldDescription final : public Widget {
 public:
     explicit FieldDescription(std::string text, float scale = 0.85f);
 
-    [[nodiscard]] Size measure(float availableWidth, Theme const&, Canvas const&) const override;
+    [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paint(Canvas&, Theme const&) const override;
     void               setControlState(ControlState const& state) override { mState = state; }
 

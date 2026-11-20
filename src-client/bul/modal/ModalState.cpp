@@ -40,11 +40,11 @@ void setFocus(Widget* target) {
         return;
     }
     if (focused) {
-        focused->setFocused(false);
+        focused->notifyFocus(false);
     }
     focused = target;
     if (focused) {
-        focused->setFocused(true);
+        focused->notifyFocus(true);
     }
     // The platform keyboard follows focus at the next frame (syncTextKeyboard),
     // not here: the engine call must not happen inside an input event.

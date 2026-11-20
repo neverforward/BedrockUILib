@@ -1,7 +1,9 @@
 #pragma once
 
+#include <functional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "bul/Canvas.h"
@@ -66,8 +68,28 @@ public:
     [[nodiscard]] Rect const&   bounds() const noexcept { return mBounds; }
     [[nodiscard]] Insets const& margin() const noexcept { return mMargin; }
 
-    /// Desired size including this widget's margin.
-    [[nodiscard]] virtual Size measure(float availableWidth, Theme const&, Canvas const&) const = 0;
+    /// Size of the last layout, in GUI units.
+    [[nodiscard]] Size  size() const noexcept { return {mBounds.width, mBounds.height}; }
+    [[nodiscard]] float width() const noexcept { return mBounds.width; }
+    [[nodiscard]] float height() const noexcept { return mBounds.height; }
+
+    // ------------------------------------------------------- size constraints
+    //
+    // The Qt/HTML knobs every element has: a fixed size, or the minimum and
+    // maximum the layout must respect. Values are content sizes (margin excluded)
+    // and 0 means "no constraint".
+
+    Widget& fixedSize(float width, float height) noexcept;
+    Widget& fixedWidth(float value) noexcept;
+    Widget& fixedHeight(float value) noexcept;
+    Widget& minSize(float width, float height) noexcept;
+    Widget& maxSize(float width, float height) noexcept;
+
+    /// Desired size including this widget's margin and size constraints.
+    [[nodiscard]] Size measure(float availableWidth, Theme const&, Canvas const&) const;
+
+    /// The content size before the constraints; components override this one.
+    [[nodiscard]] virtual Size measureContent(float availableWidth, Theme const&, Canvas const&) const = 0;
 
     /// Assigns bounds to this widget and its children.
     virtual void layout(Rect const& outer, Theme const&, Canvas const&);
@@ -90,7 +112,25 @@ public:
         activate();
     }
 
-    [[nodiscard]] virtual bool interactive() const noexcept { return false; }
+    [[nodiscard]] virtual bool interactive() const noexcept { return mOnClick != nullptr; }
+
+    // ------------------------------------------------------------------ events
+    //
+    // The element handlers the kit mirrors from HTML and Qt. They are optional
+    // and independent of the widget's own kind: a `Label` with an `onClick`
+    // becomes clickable even though its kind has no action of its own. The host
+    // fires them through `notifyClick` / `notifyFocus` / `notifyHover`, which run
+    // the widget's own reaction first.
+
+    Widget& onClick(std::function<void()> callback);
+    Widget& onFocus(std::function<void()> callback);
+    Widget& onBlur(std::function<void()> callback);
+    Widget& onHover(std::function<void(bool)> callback);
+
+    /// Host entry points: run the widget's reaction, then the callback.
+    void notifyClick(Point point);
+    void notifyFocus(bool focused);
+    void notifyHover(bool hovered);
 
     // ------------------------------------------------------------- control state
 
@@ -165,6 +205,18 @@ protected:
 
     Rect   mBounds{};
     Insets mMargin{};
+
+    std::function<void()>     mOnClick;
+    std::function<void()>     mOnFocus;
+    std::function<void()>     mOnBlur;
+    std::function<void(bool)> mOnHover;
+
+    float mFixedWidth{};
+    float mFixedHeight{};
+    float mMinWidth{};
+    float mMinHeight{};
+    float mMaxWidth{};
+    float mMaxHeight{};
 };
 
 } // namespace bul

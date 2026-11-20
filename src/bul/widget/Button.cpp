@@ -26,7 +26,7 @@ Button::Metrics Button::metrics(Theme const& theme) const noexcept {
     }
 }
 
-bul::Size Button::measure(float, Theme const& theme, Canvas const& canvas) const {
+bul::Size Button::measureContent(float, Theme const& theme, Canvas const& canvas) const {
     Metrics const profile = metrics(theme);
     return {
         canvas.textWidth(mText, profile.textScale) + 2.f * profile.padX + mMargin.horizontal(),

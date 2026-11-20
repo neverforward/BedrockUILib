@@ -334,7 +334,7 @@ void installInput() {
                 return;
             }
             if (hit->interactive()) {
-                hit->activateAt(point);
+                hit->notifyClick(point);
             }
         });
 }

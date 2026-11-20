@@ -38,7 +38,16 @@ ll::event::ListenerPtr gJoinListener;
 
 [[nodiscard]] ll::io::Logger& log() { return BedrockUILib::getInstance().getSelf().getLogger(); }
 
-enum class Page : std::size_t { Home = 0, Buttons = 1, Input = 2, Select = 3, Checkbox = 4, Radio = 5, Text = 6 };
+enum class Page : std::size_t {
+    Home     = 0,
+    Buttons  = 1,
+    Input    = 2,
+    Select   = 3,
+    Checkbox = 4,
+    Radio    = 5,
+    Text     = 6,
+    Widget   = 7
+};
 
 /// The gallery's router: one page is live at a time and the widget protocol is
 /// forwarded to it. Keeping it in the demo leaves the library free of navigation
@@ -59,7 +68,7 @@ public:
         }
     }
 
-    [[nodiscard]] Size measure(float availableWidth, Theme const& theme, Canvas const& canvas) const override {
+    [[nodiscard]] Size measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const override {
         return mPages[mCurrent]->measure(availableWidth, theme, canvas);
     }
 
@@ -144,6 +153,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Checkbox", Page::Checkbox);
     entry("Radio", Page::Radio);
     entry("Text", Page::Text);
+    entry("Widget", Page::Widget);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -615,6 +625,43 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     body->add(std::move(limited));
     return page("Text", "Label: sizes, alignment and word wrap.", std::move(body), back);
 }
+// ------------------------------------------------------------------- widget page
+
+[[nodiscard]] std::unique_ptr<Widget> widgetPage(std::function<void()> back) {
+    auto body = column(8.f);
+
+    body->add(caption("onClick: the label toggles its own text"));
+    {
+        auto  toggled = std::make_shared<bool>(false);
+        auto  label   = std::make_unique<Label>("Click me");
+        auto* raw     = label.get();
+        label->onClick([raw, toggled] {
+            *toggled = !*toggled;
+            raw->text(*toggled ? "Clicked!" : "Click me");
+            log().debug("demo: base onClick fired, now '{}'", raw->text());
+        });
+        body->add(std::move(label));
+    }
+
+    body->add(caption("onFocus / onBlur: focus the input"));
+    {
+        auto input = std::make_unique<Input>();
+        input->placeholder("Focus me");
+        input->onFocus([] { log().debug("demo: input focused"); });
+        input->onBlur([] { log().debug("demo: input blurred"); });
+        body->add(std::move(input));
+    }
+
+    body->add(caption("fixedSize: the input does not fill the row"));
+    {
+        auto input = std::make_unique<Input>();
+        input->placeholder("Narrow input");
+        input->fixedSize(160.f, 19.f);
+        body->add(std::move(input));
+    }
+
+    return page("Widget", "The base class: size constraints and events.", std::move(body), back);
+}
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -630,6 +677,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(checkboxPage(back));
     view->add(radioPage(back));
     view->add(textPage(back));
+    view->add(widgetPage(back));
     return router;
 }
 

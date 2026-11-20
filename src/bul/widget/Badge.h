@@ -23,7 +23,7 @@ public:
     [[nodiscard]] Variant            variant() const noexcept { return mVariant; }
     [[nodiscard]] std::string const& text() const noexcept { return mText; }
 
-    [[nodiscard]] Size measure(float availableWidth, Theme const&, Canvas const&) const override;
+    [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paint(Canvas&, Theme const&) const override;
 
 private:

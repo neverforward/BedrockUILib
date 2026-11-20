@@ -174,7 +174,7 @@ void Select::select(int index) {
     }
 }
 
-Size Select::measure(float availableWidth, Theme const& theme, Canvas const& canvas) const {
+Size Select::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
     float const scale  = theme.fontScale;
     float const height = canvas.lineHeight(scale) + 2.f * kPadY + 2.f * kBorder;
 
