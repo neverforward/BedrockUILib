@@ -1,0 +1,13 @@
+{
+  "name": "bedrockuilib-docs",
+  "private": true,
+  "description": "VitePress documentation site for BedrockUILib",
+  "scripts": {
+    "dev": "vitepress dev",
+    "build": "vitepress build",
+    "preview": "vitepress preview"
+  },
+  "devDependencies": {
+    "vitepress": "^1.6.4"
+  }
+}
