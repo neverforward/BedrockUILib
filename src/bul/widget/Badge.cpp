@@ -24,7 +24,7 @@ Size Badge::measureContent(float, Theme const& theme, Canvas const& canvas) cons
     };
 }
 
-void Badge::paint(Canvas& canvas, Theme const& theme) const {
+void Badge::paintContent(Canvas& canvas, Theme const& theme) const {
     float const scale  = theme.fontScale * kScale;
     bool        filled = true;
     Rgba        surface{};

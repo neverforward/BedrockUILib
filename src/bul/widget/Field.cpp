@@ -198,7 +198,7 @@ void Field::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
     }
 }
 
-void Field::paint(Canvas& canvas, Theme const& theme) const {
+void Field::paintContent(Canvas& canvas, Theme const& theme) const {
     if (mLabel) {
         mLabel->paint(canvas, theme);
     }

@@ -20,6 +20,8 @@ namespace bul {
 /// the label and the description without each of them being told separately.
 class BUL_API Field final : public Widget {
 public:
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Field"; }
+
     enum class Orientation { Vertical, Horizontal };
 
     Field();
@@ -51,7 +53,7 @@ public:
 
     [[nodiscard]] Size    measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void                  layout(Rect const& outer, Theme const&, Canvas const&) override;
-    void                  paint(Canvas&, Theme const&) const override;
+    void                  paintContent(Canvas&, Theme const&) const override;
     [[nodiscard]] Widget* hitTest(Point point) override;
     void                  setControlState(ControlState const& state) override;
     void                  collectFocusables(std::vector<Widget*>& out) override;

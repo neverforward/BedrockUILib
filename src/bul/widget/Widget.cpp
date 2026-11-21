@@ -1,5 +1,8 @@
 #include "bul/widget/Widget.h"
 
+#include "bul/StyleSheet.h"
+#include "bul/Theme.h"
+
 #include <algorithm>
 #include <utility>
 
@@ -23,6 +26,29 @@ namespace {
 }
 
 } // namespace
+
+void Widget::paint(Canvas& canvas, Theme const& theme) const { paintContent(canvas, resolvedTheme(theme)); }
+
+void Widget::paintOverlay(Canvas& canvas, Theme const& theme) const {
+    paintOverlayContent(canvas, resolvedTheme(theme));
+}
+
+Widget& Widget::style(Style value) {
+    mStyle = std::move(value);
+    return *this;
+}
+
+Theme Widget::resolvedTheme(Theme const& theme) const {
+    Theme       resolved  = theme;
+    Style const fromSheet = styleSheet().styleFor(typeName(), mClassName, mId);
+    if (!fromSheet.empty()) {
+        resolved = applyStyle(resolved, fromSheet);
+    }
+    if (!mStyle.empty()) {
+        resolved = applyStyle(resolved, mStyle);
+    }
+    return resolved;
+}
 
 Widget& Widget::fixedSize(float width, float height) noexcept {
     mFixedWidth  = width;
@@ -90,6 +116,16 @@ Widget& Widget::onBlur(std::function<void()> callback) {
 
 Widget& Widget::onHover(std::function<void(bool)> callback) {
     mOnHover = std::move(callback);
+    return *this;
+}
+
+Widget& Widget::className(std::string value) {
+    mClassName = std::move(value);
+    return *this;
+}
+
+Widget& Widget::id(std::string value) {
+    mId = std::move(value);
     return *this;
 }
 

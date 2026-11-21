@@ -55,9 +55,11 @@ public:
     Select&            required(bool value) noexcept;
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Select"; }
+
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               layout(Rect const& outer, Theme const&, Canvas const&) override;
-    void               paint(Canvas&, Theme const&) const override;
+    void               paintContent(Canvas&, Theme const&) const override;
     void               setHovered(bool hovered) override { mHovered = hovered; }
     void               setPointer(Point point) override { mPointer = point; }
     void               activate() override;
@@ -70,7 +72,7 @@ public:
 
     // The open popup participates in the host's overlay pass.
     void                  collectOverlays(std::vector<Widget*>& out) override;
-    void                  paintOverlay(Canvas&, Theme const&) const override;
+    void                  paintOverlayContent(Canvas&, Theme const&) const override;
     [[nodiscard]] Widget* overlayHitTest(Point point) override;
     void                  dismissOverlay() override;
 

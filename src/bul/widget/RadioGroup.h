@@ -19,6 +19,8 @@ namespace bul {
 /// tick. Like `Checkbox`, the state is carried by the fill, not by a frame.
 class BUL_API RadioGroup final : public Widget {
 public:
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "RadioGroup"; }
+
     RadioGroup();
     ~RadioGroup() override; // defined in the .cpp: the radios are incomplete here
 
@@ -52,7 +54,7 @@ public:
 
     [[nodiscard]] Size    measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void                  layout(Rect const& outer, Theme const&, Canvas const&) override;
-    void                  paint(Canvas&, Theme const&) const override;
+    void                  paintContent(Canvas&, Theme const&) const override;
     [[nodiscard]] Widget* hitTest(Point point) override;
     void                  setControlState(ControlState const& state) override;
     void                  collectFocusables(std::vector<Widget*>& out) override;

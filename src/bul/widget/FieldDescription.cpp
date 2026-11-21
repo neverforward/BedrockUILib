@@ -13,7 +13,7 @@ Size FieldDescription::measureContent(float, Theme const& theme, Canvas const& c
     return {canvas.textWidth(mText, scale) + mMargin.horizontal(), canvas.lineHeight(scale) + mMargin.vertical()};
 }
 
-void FieldDescription::paint(Canvas& canvas, Theme const& theme) const {
+void FieldDescription::paintContent(Canvas& canvas, Theme const& theme) const {
     float const scale = theme.fontScale * mScale;
     float const alpha = mState.disabled ? 0.5f : 1.f;
     canvas.text(

@@ -9,6 +9,7 @@
 #include "bul/Canvas.h"
 #include "bul/Export.h"
 #include "bul/Geometry.h"
+#include "bul/Style.h"
 
 namespace bul {
 
@@ -56,6 +57,25 @@ public:
     Widget& operator=(Widget const&) = delete;
     virtual ~Widget()                = default;
 
+    /// This widget's colour overrides, merged over the theme it inherits.
+    Widget&                    style(Style value);
+    [[nodiscard]] Style const& style() const noexcept { return mStyle; }
+
+    /// The theme this widget paints with: the inherited theme, the rules of the
+    /// active style sheet that match it, then its own inline `style()`.
+    [[nodiscard]] Theme resolvedTheme(Theme const& theme) const;
+
+    /// The element name a style-sheet rule can select, e.g. "Button".
+    [[nodiscard]] virtual std::string_view typeName() const noexcept { return {}; }
+
+    /// A class selector target, like the `class` attribute of an element.
+    Widget&                          className(std::string value);
+    [[nodiscard]] std::string const& className() const noexcept { return mClassName; }
+
+    /// An id selector target, like the `id` attribute of an element.
+    Widget&                          id(std::string value);
+    [[nodiscard]] std::string const& id() const noexcept { return mId; }
+
     Widget& margin(float all) noexcept {
         mMargin = {all, all, all, all};
         return *this;
@@ -94,7 +114,13 @@ public:
     /// Assigns bounds to this widget and its children.
     virtual void layout(Rect const& outer, Theme const&, Canvas const&);
 
-    virtual void paint(Canvas&, Theme const&) const = 0;
+    /// Paints with this widget's style applied over the theme it was handed. A
+    /// container passes its already-resolved theme down, so a style on a
+    /// container colours its whole subtree.
+    void paint(Canvas& canvas, Theme const& theme) const;
+
+    /// The component's own drawing; the theme already carries this widget's style.
+    virtual void paintContent(Canvas&, Theme const&) const = 0;
 
     /// Deepest widget under `point`, or nullptr.
     [[nodiscard]] virtual Widget* hitTest(Point point);
@@ -179,7 +205,10 @@ public:
     virtual void collectOverlays(std::vector<Widget*>&) {}
 
     /// Paints the open popup; called after the tree has been painted.
-    virtual void paintOverlay(Canvas&, Theme const&) const {}
+    void paintOverlay(Canvas& canvas, Theme const& theme) const;
+
+    /// The popup's own drawing; the theme already carries this widget's style.
+    virtual void paintOverlayContent(Canvas&, Theme const&) const {}
 
     /// Claims the pointer while a popup is open (nullptr when closed). Claiming
     /// the whole screen is what makes the popup modal: an outside click closes
@@ -203,8 +232,11 @@ protected:
         };
     }
 
-    Rect   mBounds{};
-    Insets mMargin{};
+    Rect        mBounds{};
+    Insets      mMargin{};
+    Style       mStyle{};
+    std::string mClassName{};
+    std::string mId{};
 
     std::function<void()>     mOnClick;
     std::function<void()>     mOnFocus;

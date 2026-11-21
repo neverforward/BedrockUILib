@@ -28,6 +28,8 @@ under `### Changed`.
   (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
 - `Checkbox`: a box with an inline label (`checked` / `onCheckedChange`,
   `indeterminate`, `readOnly`).
+- `StyleSheet`: CSS-like rules (`type` / `className` / `id` selectors, specificity) that colour whole components over the theme; an inline `Style` still wins.
+- `Style`: per-widget colour overrides merged over the inherited `Theme` (inline style over the theme, inherited down the tree); the spec `Common` carries one.
 - `bul::spec`: declarative trees (`spec::Stack`, `spec::Field`, ... built with `spec::build` / `spec::node`), sharing the `Widget` base properties.
 - `Switch`: an on/off track with a thumb (`text`, `checked` / `onCheckedChange`, `readOnly`).
 - `RadioGroup`: radio buttons with one choice (`add`, `value` /

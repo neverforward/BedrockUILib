@@ -38,8 +38,10 @@ public:
     Switch&            required(bool value) noexcept;
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Switch"; }
+
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
-    void               paint(Canvas&, Theme const&) const override;
+    void               paintContent(Canvas&, Theme const&) const override;
     void               setHovered(bool hovered) override { mHovered = hovered; }
     void               setFocused(bool focused) override { mFocused = focused; }
     void               activate() override;

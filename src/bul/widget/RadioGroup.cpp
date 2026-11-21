@@ -49,6 +49,8 @@ public:
       mText(std::move(text)),
       mLocalDisabled(disabled) {}
 
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Radio"; }
+
     [[nodiscard]] std::string const& value() const noexcept { return mValue; }
     [[nodiscard]] bool               checked() const noexcept { return mGroup.value() == mValue; }
     [[nodiscard]] bool               disabled() const noexcept { return mLocalDisabled || mGroup.disabled(); }
@@ -65,7 +67,7 @@ public:
         return {width, height};
     }
 
-    void paint(Canvas& canvas, Theme const& theme) const override {
+    void paintContent(Canvas& canvas, Theme const& theme) const override {
         float const scale      = theme.fontScale;
         float const lineHeight = canvas.lineHeight(scale);
         float const fade       = disabled() ? kDisabled : 1.f;
@@ -272,7 +274,7 @@ void RadioGroup::layout(Rect const& outer, Theme const& theme, Canvas const& can
     }
 }
 
-void RadioGroup::paint(Canvas& canvas, Theme const& theme) const {
+void RadioGroup::paintContent(Canvas& canvas, Theme const& theme) const {
     for (auto const& radio : mRadios) {
         radio->paint(canvas, theme);
     }

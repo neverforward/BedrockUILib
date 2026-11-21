@@ -34,7 +34,7 @@ bul::Size Button::measureContent(float, Theme const& theme, Canvas const& canvas
     };
 }
 
-void Button::paint(Canvas& canvas, Theme const& theme) const {
+void Button::paintContent(Canvas& canvas, Theme const& theme) const {
     Metrics const profile = metrics(theme);
     bool const    hovered = mHovered && !disabled();
     float const   fade    = disabled() ? 0.5f : 1.f;

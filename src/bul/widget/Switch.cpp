@@ -116,7 +116,7 @@ Size Switch::measureContent(float availableWidth, Theme const& theme, Canvas con
     return {width, height};
 }
 
-void Switch::paint(Canvas& canvas, Theme const& theme) const {
+void Switch::paintContent(Canvas& canvas, Theme const& theme) const {
     float const scale      = theme.fontScale;
     float const lineHeight = canvas.lineHeight(scale);
     float const fade       = disabled() ? kDisabled : 1.f;

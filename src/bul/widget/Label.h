@@ -77,8 +77,10 @@ public:
         return *this;
     }
 
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Label"; }
+
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
-    void               paint(Canvas&, Theme const&) const override;
+    void               paintContent(Canvas&, Theme const&) const override;
 
 private:
     std::string mText;

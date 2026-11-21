@@ -209,7 +209,7 @@ void Select::layout(Rect const& outer, Theme const& theme, Canvas const& canvas)
     };
 }
 
-void Select::paint(Canvas& canvas, Theme const& theme) const {
+void Select::paintContent(Canvas& canvas, Theme const& theme) const {
     float const scale      = theme.fontScale;
     float const lineHeight = canvas.lineHeight(scale);
     float const fade       = disabled() ? 0.5f : 1.f;
@@ -249,7 +249,7 @@ void Select::paint(Canvas& canvas, Theme const& theme) const {
     canvas.outline(mBounds, border.withAlpha(fade), kBorder);
 }
 
-void Select::paintOverlay(Canvas& canvas, Theme const& theme) const {
+void Select::paintOverlayContent(Canvas& canvas, Theme const& theme) const {
     if (!mOpen || mItems.empty()) {
         return;
     }

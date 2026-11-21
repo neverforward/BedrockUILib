@@ -21,6 +21,7 @@
 
 #include "bul/Modal.h"
 #include "bul/Spec.h"
+#include "bul/StyleSheet.h"
 #include "bul/Theme.h"
 #include "bul/Widget.h"
 #include "mod/Mod.h"
@@ -49,7 +50,8 @@ enum class Page : std::size_t {
     Text     = 6,
     Widget   = 7,
     Switch   = 8,
-    Spec     = 9
+    Spec     = 9,
+    Style    = 10
 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
@@ -80,7 +82,7 @@ public:
         mPages[mCurrent]->layout(mBounds, theme, canvas);
     }
 
-    void paint(Canvas& canvas, Theme const& theme) const override { mPages[mCurrent]->paint(canvas, theme); }
+    void paintContent(Canvas& canvas, Theme const& theme) const override { mPages[mCurrent]->paint(canvas, theme); }
 
     [[nodiscard]] Widget* hitTest(Point point) override {
         if (Widget* hit = mPages[mCurrent]->hitTest(point)) {
@@ -159,6 +161,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Widget", Page::Widget);
     entry("Switch", Page::Switch);
     entry("Spec", Page::Spec);
+    entry("Style", Page::Style);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -753,6 +756,109 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     body->add(std::move(tree));
     return page("Spec", "A tree built from structs, not make_unique chains.", std::move(body), back);
 }
+// -------------------------------------------------------------------- style page
+
+/// Theme presets: setTheme repaints the whole window with the new palette, so a
+/// switch is visible on every page (and only when the user asks for it).
+[[nodiscard]] Theme themeOcean() {
+    Theme theme       = Theme::neutral();
+    theme.panel       = Rgba::fromRgb(0x0E1A2B);
+    theme.panelBorder = Rgba::fromRgb(0x22405F);
+    theme.accent      = Rgba::fromRgb(0x4CC2FF);
+    theme.button      = Rgba::fromRgb(0x1B2C42);
+    theme.buttonHover = Rgba::fromRgb(0x27405C);
+    theme.input       = Rgba::fromRgb(0x0A1422);
+    theme.inputBorder = Rgba::fromRgb(0x22405F);
+    return theme;
+}
+
+[[nodiscard]] Theme themeSunset() {
+    Theme theme       = Theme::neutral();
+    theme.panel       = Rgba::fromRgb(0x2A1B16);
+    theme.panelBorder = Rgba::fromRgb(0x53342A);
+    theme.accent      = Rgba::fromRgb(0xFF9A4C);
+    theme.button      = Rgba::fromRgb(0x3B2620);
+    theme.buttonHover = Rgba::fromRgb(0x54402F);
+    theme.input       = Rgba::fromRgb(0x1F1410);
+    theme.inputBorder = Rgba::fromRgb(0x53342A);
+    return theme;
+}
+
+/// The class/id rules the page demonstrates; installed only when asked for.
+void applyClassRules() {
+    auto const panel = Rgba::fromRgb(0x1A1D24);
+
+    StyleSheet sheet;
+    sheet.rule(
+        {.className = "danger"},
+        {.primary = Rgba::fromRgb(0xE5484D), .primaryHover = Rgba::fromRgb(0xC93C41), .primaryText = panel}
+    );
+    sheet.rule(
+        {.id = "submit"},
+        {.primary = Rgba::fromRgb(0x46A758), .primaryHover = Rgba::fromRgb(0x3B8C4B), .primaryText = panel}
+    );
+    setStyleSheet(std::move(sheet));
+}
+
+void clearClassRules() { setStyleSheet({}); }
+
+[[nodiscard]] std::unique_ptr<Widget> stylePage(std::function<void()> back) {
+    auto body = column(8.f);
+
+    body->add(caption("theme: switching repaints the whole window"));
+    {
+        auto presets = row(6.f);
+        presets->add(std::make_unique<Button>("Neutral", [] { setTheme(Theme::neutral()); }));
+        presets->add(std::make_unique<Button>("Ocean", [] { setTheme(themeOcean()); }));
+        presets->add(std::make_unique<Button>("Sunset", [] { setTheme(themeSunset()); }));
+        body->add(std::move(presets));
+    }
+
+    body->add(caption("style on a container colours its whole subtree"));
+
+    auto group = column(6.f);
+    group->style({.text = Rgba::fromRgb(0x8CC4FF), .accent = Rgba::fromRgb(0xFFB454)});
+    group->add(std::make_unique<Label>("Inherited text colour"));
+
+    {
+        auto child = std::make_unique<Label>("A child may override it");
+        child->style({.text = Rgba::fromRgb(0x46A758)});
+        group->add(std::move(child));
+    }
+    {
+        auto box = std::make_unique<Checkbox>();
+        box->text("Accent comes from the container");
+        box->checked(true);
+        group->add(std::move(box));
+    }
+    {
+        auto button = std::make_unique<Button>("Styled button");
+        button->style({.primary = Rgba::fromRgb(0x46A758), .primaryText = Rgba::fromRgb(0x0E1116)});
+        group->add(std::move(button));
+    }
+
+    body->add(std::move(group));
+
+    body->add(caption("stylesheet rules: .danger / #submit"));
+    {
+        auto commands = row(6.f);
+        commands->add(std::make_unique<Button>("Apply rules", [] { applyClassRules(); }));
+        commands->add(std::make_unique<Button>("Reset rules", [] { clearClassRules(); }));
+        body->add(std::move(commands));
+    }
+    {
+        auto styled = row(6.f);
+        auto danger = std::make_unique<Button>("class: danger");
+        danger->className("danger");
+        styled->add(std::move(danger));
+        auto submit = std::make_unique<Button>("id: submit");
+        submit->id("submit");
+        styled->add(std::move(submit));
+        body->add(std::move(styled));
+    }
+
+    return page("Style", "Inline style over the theme, like style=\"\" over <link>.", std::move(body), back);
+}
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -771,6 +877,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     view->add(widgetPage(back));
     view->add(switchPage(back));
     view->add(specPage(back));
+    view->add(stylePage(back));
     return router;
 }
 

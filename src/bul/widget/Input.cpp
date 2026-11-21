@@ -223,7 +223,7 @@ std::size_t Input::caretAt(float pointerX, TextLayout const& layout, Rect const&
     return mEdit.offsetOfCodePoint(best);
 }
 
-void Input::paint(Canvas& canvas, Theme const& theme) const {
+void Input::paintContent(Canvas& canvas, Theme const& theme) const {
     Metrics const metrics = this->metrics(theme);
     float const   fade    = disabled() ? 0.5f : 1.f;
 

@@ -23,6 +23,8 @@ namespace bul {
 /// testable with a recording canvas.
 class BUL_API Input final : public Widget {
 public:
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Input"; }
+
     enum class Kind { Text, Password, Search, File };
 
     Input();
@@ -65,7 +67,7 @@ public:
 
     [[nodiscard]] Size        measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void                      layout(Rect const& outer, Theme const&, Canvas const&) override;
-    void                      paint(Canvas&, Theme const&) const override;
+    void                      paintContent(Canvas&, Theme const&) const override;
     void                      setHovered(bool hovered) override { mHovered = hovered; }
     void                      activate() override;
     void                      activateAt(Point point) override;

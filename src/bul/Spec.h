@@ -28,6 +28,7 @@ struct Common {
     std::function<void()>     onFocus{};
     std::function<void()>     onBlur{};
     std::function<void(bool)> onHover{};
+    Style                     style{};
 };
 
 /// A text run's font: the size is relative to the theme base size, and the colour
@@ -73,6 +74,9 @@ namespace detail {
     }
     if (common.onHover) {
         widget->onHover(common.onHover);
+    }
+    if (!common.style.empty()) {
+        widget->style(common.style);
     }
     return widget;
 }

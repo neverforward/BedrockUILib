@@ -15,6 +15,8 @@ namespace bul {
 /// scale and the padding, not the colour.
 class BUL_API Button final : public Widget {
 public:
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Button"; }
+
     enum class Type { Default, Secondary, Destructive, Outline, Link };
     enum class Size { XSmall, Small, Default, Large };
 
@@ -39,7 +41,7 @@ public:
 
     // Qualified: Button::Size (the variant enum) shadows bul::Size inside the class.
     [[nodiscard]] bul::Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
-    void                    paint(Canvas&, Theme const&) const override;
+    void                    paintContent(Canvas&, Theme const&) const override;
     void                    setHovered(bool hovered) override { mHovered = hovered; }
     void                    activate() override;
     [[nodiscard]] bool      interactive() const noexcept override { return !disabled(); }

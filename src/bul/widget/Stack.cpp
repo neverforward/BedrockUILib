@@ -98,7 +98,7 @@ void Stack::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
     }
 }
 
-void Stack::paint(Canvas& canvas, Theme const& theme) const {
+void Stack::paintContent(Canvas& canvas, Theme const& theme) const {
     for (auto const& entry : mEntries) {
         entry.child->paint(canvas, theme);
     }

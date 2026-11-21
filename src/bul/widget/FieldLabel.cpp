@@ -53,7 +53,7 @@ void FieldLabel::layout(Rect const& outer, Theme const& theme, Canvas const& can
     mBadge->layout({x, y, badgeSize.width, badgeSize.height}, theme, canvas);
 }
 
-void FieldLabel::paint(Canvas& canvas, Theme const& theme) const {
+void FieldLabel::paintContent(Canvas& canvas, Theme const& theme) const {
     float const scale = theme.fontScale * mScale;
     float const y     = mBounds.y + (mBounds.height - canvas.lineHeight(scale)) / 2.f;
     float const alpha = disabled() ? 0.5f : 1.f;

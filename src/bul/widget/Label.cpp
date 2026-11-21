@@ -236,7 +236,7 @@ Size Label::measureContent(float availableWidth, Theme const& theme, Canvas cons
     return {layout.width + mMargin.horizontal(), layout.height + mMargin.vertical()};
 }
 
-void Label::paint(Canvas& canvas, Theme const& theme) const {
+void Label::paintContent(Canvas& canvas, Theme const& theme) const {
     float const      size    = theme.fontScale * mScale;
     float const      spacing = mLineSpacing * theme.fontScale;
     TextLayout const layout =
