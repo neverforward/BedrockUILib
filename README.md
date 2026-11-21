@@ -53,6 +53,9 @@ npm run dev      # local preview
 npm run build    # static site in docs/.vitepress/dist/
 ```
 
+Published at <https://neverforward.github.io/BedrockUILib/> by
+`.github/workflows/docs.yml` (GitHub Pages, `Settings -> Pages -> Source: GitHub Actions`).
+
 ## Versioning
 
 0.x: source compatibility only.

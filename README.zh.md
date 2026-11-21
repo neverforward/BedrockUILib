@@ -52,6 +52,10 @@ npm run dev      # 本地预览
 npm run build    # 静态站点生成到 docs/.vitepress/dist/
 ```
 
+在线地址：<https://neverforward.github.io/BedrockUILib/>，由
+`.github/workflows/docs.yml` 发布到 GitHub Pages（需在仓库
+`Settings -> Pages -> Source` 选 `GitHub Actions`）。
+
 ## 版本
 
 0.x 期间只保证源码兼容。

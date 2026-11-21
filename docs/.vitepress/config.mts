@@ -4,8 +4,13 @@ const repo = 'https://github.com/neverforward/BedrockUILib'
 
 const editLink = { pattern: `${repo}/edit/main/docs/:path` }
 
+// GitHub Pages serves project sites under /<repo>/, so the workflow passes that
+// base in; a local build or the dev server keeps '/' .
+const base = process.env.DOCS_BASE || '/'
+
 export default defineConfig({
   title: 'BedrockUILib',
+  base,
   description: 'Native widgets for Minecraft Bedrock client mods',
   cleanUrls: true,
   head: [['meta', { name: 'theme-color', content: '#59A9FF' }]],
