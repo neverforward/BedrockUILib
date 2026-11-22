@@ -53,7 +53,8 @@ enum class Page : std::size_t {
     Spec     = 9,
     Style    = 10,
     Grid     = 11,
-    Table    = 12
+    Table    = 12,
+    Scroll   = 13
 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
@@ -98,6 +99,8 @@ public:
     void collectFocusables(std::vector<Widget*>& out) override { mPages[mCurrent]->collectFocusables(out); }
 
     void collectOverlays(std::vector<Widget*>& out) override { mPages[mCurrent]->collectOverlays(out); }
+
+    [[nodiscard]] bool wheel(Point point, float delta) override { return mPages[mCurrent]->wheel(point, delta); }
 
 private:
     std::vector<std::unique_ptr<Widget>> mPages{};
@@ -166,6 +169,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Style", Page::Style);
     entry("Grid", Page::Grid);
     entry("Table", Page::Table);
+    entry("Scroll", Page::Scroll);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -949,6 +953,35 @@ void clearClassRules() { setStyleSheet({}); }
 
     return page("Style", "Inline style over the theme, like style=\"\" over <link>.", std::move(body), back);
 }
+// ------------------------------------------------------------------- scroll page
+
+[[nodiscard]] std::unique_ptr<Widget> scrollPage(std::function<void()> back) {
+    auto body = column(8.f);
+    body->add(caption("ScrollView: the content is taller than its viewport."));
+
+    auto view = std::make_unique<ScrollView>();
+    view->viewport(110.f);
+    {
+        // Interactive children: the list holds buttons, so the viewport has to
+        // clip their surfaces and their text alike.
+        auto list = column(4.f);
+        for (int i = 1; i <= 20; ++i) {
+            list->add(std::make_unique<Button>("Row " + std::to_string(i), [] {}));
+        }
+        view->content(std::move(list));
+    }
+    ScrollView* raw = view.get();
+    body->add(std::move(view));
+
+    auto controls = row(6.f);
+    controls->add(std::make_unique<Button>("Up", [raw] { raw->scrollBy(-24.f); }));
+    controls->add(std::make_unique<Button>("Down", [raw] { raw->scrollBy(24.f); }));
+    controls->add(std::make_unique<Button>("Top", [raw] { raw->scrollTo(0.f); }));
+    body->add(std::move(controls));
+
+    body->add(caption("The wheel scrolls it; the buttons scroll programmatically."));
+    return page("Scroll", "A viewport over a taller list, with a scrollbar.", std::move(body), back);
+}
 // ------------------------------------------------------------------------- window
 
 [[nodiscard]] std::unique_ptr<Widget> makeDemoWindow() {
@@ -970,6 +1003,7 @@ void clearClassRules() { setStyleSheet({}); }
     view->add(stylePage(back));
     view->add(gridPage(back));
     view->add(tablePage(back));
+    view->add(scrollPage(back));
     return router;
 }
 

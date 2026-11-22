@@ -168,6 +168,17 @@ Widget* Table::hitTest(Point point) {
     return mBounds.contains(point) ? this : nullptr;
 }
 
+bool Table::wheel(Point point, float delta) {
+    if (!mBounds.contains(point)) {
+        return false;
+    }
+    for (auto it = mCells.rbegin(); it != mCells.rend(); ++it) {
+        if (*it && (*it)->bounds().contains(point) && (*it)->wheel(point, delta)) {
+            return true;
+        }
+    }
+    return false;
+}
 void Table::setControlState(ControlState const& state) {
     for (auto& cell : mCells) {
         if (cell) {

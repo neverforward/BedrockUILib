@@ -32,7 +32,8 @@ void finishCloseLocked(char const* reason) {
     closingFrames = 0;
     releaseTextKeyboard();
     setFocus(nullptr);
-    hovered = nullptr;
+    hovered  = nullptr;
+    captured = nullptr;
     pendingEdits.clear(); // edits of a closed window must not touch the old tree
     log().info("bul: modal closed ({})", reason);
 }

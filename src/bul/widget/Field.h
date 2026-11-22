@@ -55,6 +55,7 @@ public:
     void                  layout(Rect const& outer, Theme const&, Canvas const&) override;
     void                  paintContent(Canvas&, Theme const&) const override;
     [[nodiscard]] Widget* hitTest(Point point) override;
+    [[nodiscard]] bool    wheel(Point point, float delta) override;
     void                  setControlState(ControlState const& state) override;
     void                  collectFocusables(std::vector<Widget*>& out) override;
     void                  collectOverlays(std::vector<Widget*>& out) override;

@@ -31,6 +31,12 @@ public:
     [[nodiscard]] virtual float textWidth(std::string_view text, float size) const = 0;
     [[nodiscard]] virtual float lineHeight(float size) const                       = 0;
 
+    /// Confines the drawing to `rect` until `popClip`; clips nest by
+    /// intersection. The default does nothing, so a canvas without scissor
+    /// support still draws (a scroll container then paints whole children).
+    virtual void pushClip(Rect const&) {}
+    virtual void popClip() {}
+
     /// Submits everything recorded since the previous flush.
     virtual void flush() = 0;
 };

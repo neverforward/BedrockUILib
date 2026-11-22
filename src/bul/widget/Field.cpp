@@ -64,6 +64,17 @@ Field& Field::required(bool value) {
     return *this;
 }
 
+bool Field::wheel(Point point, float delta) {
+    if (!mBounds.contains(point)) {
+        return false;
+    }
+    for (auto* child : {mDescription.get(), mControl.get(), mLabel.get()}) {
+        if (child && child->bounds().contains(point) && child->wheel(point, delta)) {
+            return true;
+        }
+    }
+    return false;
+}
 void Field::setControlState(ControlState const& state) {
     mInherited = state;
     propagate();

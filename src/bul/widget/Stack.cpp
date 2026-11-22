@@ -68,6 +68,17 @@ void Stack::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
         mEntries[i].child->layout(rects[i], theme, canvas);
     }
 }
+bool Stack::wheel(Point point, float delta) {
+    if (!mBounds.contains(point)) {
+        return false;
+    }
+    for (auto it = mEntries.rbegin(); it != mEntries.rend(); ++it) {
+        if (it->child->bounds().contains(point) && it->child->wheel(point, delta)) {
+            return true;
+        }
+    }
+    return false;
+}
 void Stack::paintContent(Canvas& canvas, Theme const& theme) const {
     for (auto const& entry : mEntries) {
         entry.child->paint(canvas, theme);

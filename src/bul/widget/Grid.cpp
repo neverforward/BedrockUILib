@@ -58,6 +58,17 @@ void Grid::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) {
     }
 }
 
+bool Grid::wheel(Point point, float delta) {
+    if (!mBounds.contains(point)) {
+        return false;
+    }
+    for (auto it = mChildren.rbegin(); it != mChildren.rend(); ++it) {
+        if ((*it)->bounds().contains(point) && (*it)->wheel(point, delta)) {
+            return true;
+        }
+    }
+    return false;
+}
 void Grid::paintContent(Canvas& canvas, Theme const& theme) const {
     for (auto const& child : mChildren) {
         child->paint(canvas, theme);

@@ -230,3 +230,17 @@ TEST(Spec, BuildsFieldParts) {
     auto description = bul::spec::build(bul::spec::FieldDescription{.text = "Hint"});
     EXPECT_EQ(description->typeName(), "FieldDescription");
 }
+
+TEST(Spec, BuildsAScrollView) {
+    auto tree = bul::spec::build(
+        bul::spec::ScrollView{
+            .viewport = 100.f,
+            .content  = bul::spec::node(bul::spec::Label{.text = "Row"}),
+        }
+    );
+
+    EXPECT_EQ(tree->typeName(), "ScrollView");
+    bul::ScrollView* view = dynamic_cast<bul::ScrollView*>(tree.get());
+    ASSERT_NE(view, nullptr);
+    EXPECT_TRUE(view->scrollbar());
+}

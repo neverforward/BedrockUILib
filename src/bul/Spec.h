@@ -288,6 +288,15 @@ struct Table {
     [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
 };
 
+/// A scroll viewport over one content node.
+struct ScrollView {
+    Common                common{};
+    float                 viewport{};
+    bool                  scrollbar{true};
+    std::shared_ptr<Node> content{};
+
+    [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
+};
 /// The label of a field (usually built by Field).
 struct FieldLabel {
     Common                common{};

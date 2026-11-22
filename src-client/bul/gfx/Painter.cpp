@@ -1,5 +1,6 @@
 #include "bul/gfx/Painter.h"
 
+#include <algorithm>
 #include <optional>
 #include <utility>
 
@@ -26,6 +27,13 @@ constexpr float kLineHeight = 9.f;
 
 [[nodiscard]] mce::Color toMce(Rgba const& color) { return mce::Color{color.r, color.g, color.b, color.a}; }
 
+[[nodiscard]] Rect intersect(Rect const& a, Rect const& b) {
+    float const x      = std::max(a.x, b.x);
+    float const y      = std::max(a.y, b.y);
+    float const right  = std::min(a.right(), b.right());
+    float const bottom = std::min(a.bottom(), b.bottom());
+    return {x, y, std::max(right - x, 0.f), std::max(bottom - y, 0.f)};
+}
 /// Material the vanilla UI uses to flush solid coloured quads.
 [[nodiscard]] HashedString const& fillMaterial() {
     static HashedString const material{"ui_fillColor"};
@@ -89,6 +97,24 @@ void Painter::text(
     CaretMeasureData const caret{-1, false};
     mContext.drawText(mFont, area, std::string{text}, toMce(color), color.a, align, measure, caret);
     mHasText = true;
+}
+
+void Painter::pushClip(Rect const& rect) {
+    Rect const effective = mClips.empty() ? rect : intersect(mClips.back(), rect);
+    mClips.push_back(effective);
+    mContext.setClippingRectangle(toArea(effective));
+}
+
+void Painter::popClip() {
+    if (mClips.empty()) {
+        return;
+    }
+    mClips.pop_back();
+    if (mClips.empty()) {
+        mContext.setFullClippingRectangle();
+    } else {
+        mContext.setClippingRectangle(toArea(mClips.back()));
+    }
 }
 
 void Painter::flush() {

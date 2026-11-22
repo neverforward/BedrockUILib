@@ -34,6 +34,8 @@ public:
         Rgba        color;
     };
 
+    std::vector<Rect>   clips;      // the active stack
+    std::vector<Rect>   clipPushes; // every push, in order
     std::vector<Fill>   fills;
     std::vector<Stroke> strokes;
     std::vector<Text>   texts;
@@ -54,6 +56,17 @@ public:
     }
 
     [[nodiscard]] float lineHeight(float size) const override { return 9.f * size; }
+
+    void pushClip(Rect const& rect) override {
+        clips.push_back(rect);
+        clipPushes.push_back(rect);
+    }
+
+    void popClip() override {
+        if (!clips.empty()) {
+            clips.pop_back();
+        }
+    }
 
     void flush() override { ++flushes; }
 

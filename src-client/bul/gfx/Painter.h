@@ -3,6 +3,7 @@
 #include <memory>
 #include <string>
 #include <string_view>
+#include <vector>
 
 #include "bul/Color.h"
 #include "bul/Geometry.h"
@@ -45,6 +46,12 @@ public:
         float             width = 0.f
     );
 
+    /// Intersects the engine's clipping rectangle with `rect`; pair with
+    /// `popClip`. Clips nest: each push narrows what is drawn, each pop widens it
+    /// back.
+    void pushClip(Rect const& rect);
+    void popClip();
+
     void flush();
 
     /// Size of the UI screen in GUI units.
@@ -59,6 +66,7 @@ private:
     // an id); keep the owner alive so the reference stays valid for this painter.
     std::shared_ptr<Font> mFontOwner;
     Font&                 mFont;
+    std::vector<Rect>     mClips;
     bool                  mHasFills{};
     bool                  mHasText{};
 };

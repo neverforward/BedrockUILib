@@ -35,6 +35,10 @@ float GameCanvas::textWidth(std::string_view value, float size) const { return m
 
 float GameCanvas::lineHeight(float size) const { return mPainter.lineHeight(size); }
 
+void GameCanvas::pushClip(Rect const& rect) { mPainter.pushClip(rect); }
+
+void GameCanvas::popClip() { mPainter.popClip(); }
+
 void GameCanvas::flush() { mPainter.flush(); }
 
 Rect GameCanvas::screen() const { return mPainter.screen(); }

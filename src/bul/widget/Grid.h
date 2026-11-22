@@ -31,6 +31,7 @@ public:
     [[nodiscard]] Size    measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void                  layout(Rect const& outer, Theme const&, Canvas const&) override;
     void                  paintContent(Canvas&, Theme const&) const override;
+    [[nodiscard]] bool    wheel(Point, float) override;
     [[nodiscard]] Widget* hitTest(Point point) override;
     void                  setControlState(ControlState const& state) override;
     void                  collectFocusables(std::vector<Widget*>& out) override;

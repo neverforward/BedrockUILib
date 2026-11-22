@@ -114,6 +114,16 @@ public:
     /// Assigns bounds to this widget and its children.
     virtual void layout(Rect const& outer, Theme const&, Canvas const&);
 
+    /// Wheel routing: delta > 0 scrolls down. The host offers the wheel to the
+    /// widget under the pointer first; a container forwards it to the child under
+    /// the pointer and then handles it itself. Returns true when consumed.
+    [[nodiscard]] virtual bool wheel(Point, float) { return false; }
+
+    /// Pointer press inside this widget. Returning true captures the pointer: the
+    /// following moves arrive as `drag` and the button release as `release`.
+    [[nodiscard]] virtual bool press(Point) { return false; }
+    virtual void                 drag(Point) {}
+    virtual void                 release() {}
     /// Paints with this widget's style applied over the theme it was handed. A
     /// container passes its already-resolved theme down, so a style on a
     /// container colours its whole subtree.

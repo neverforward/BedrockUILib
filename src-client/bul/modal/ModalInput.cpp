@@ -266,7 +266,8 @@ void installInput() {
             // to keep its pointer state (GuiData::mPointerX/Y) alive, which is what
             // hit testing reads. Cancelling moves froze the pointer at the position
             // it had before the modal opened.
-            bool const isMove = event.actionButtonId() == MouseAction::ActionMove;
+            bool const isMove  = event.actionButtonId() == MouseAction::ActionMove;
+            bool const isWheel = event.actionButtonId() == MouseAction::ActionWheel;
             if (!isMove) {
                 event.cancel();
             }
@@ -293,8 +294,45 @@ void installInput() {
                     }
                 }
                 hit = claimed != nullptr ? claimed : root->hitTest(point);
-                click =
+                if (isWheel && root) {
+                    // The wheel's `data` is a Windows wheel delta: one notch is
+                    // +/-120. Turn it into notches (a touchpad sends fractions)
+                    // and negate it, so a positive delta scrolls towards the end.
+                    constexpr float kWheelDelta = 120.f;
+                    float const     delta       = -static_cast<float>(event.buttonData()) / kWheelDelta;
+                    bool const      consumed    = root->wheel(point, delta);
+                    log().debug(
+                        "bul: wheel at ({:.0f}, {:.0f}) data {} delta {:.2f} consumed {}",
+                        point.x,
+                        point.y,
+                        static_cast<int>(event.buttonData()),
+                        delta,
+                        consumed
+                    );
+                    return;
+                }
+                bool const pressed =
                     event.actionButtonId() == MouseAction::ActionLeft && event.buttonData() == MouseAction::DataDown;
+                bool const released =
+                    event.actionButtonId() == MouseAction::ActionLeft && event.buttonData() == MouseAction::DataUp;
+
+                // A drag in progress gets the moves; the release ends it. Without a
+                // capture, moves only keep the engine's pointer alive.
+                if (isMove && captured) {
+                    captured->drag(point);
+                    return;
+                }
+                if (released && captured) {
+                    captured->release();
+                    captured = nullptr;
+                    return;
+                }
+                if (pressed && hit && hit->press(point)) {
+                    captured = hit;
+                    return;
+                }
+
+                click = pressed;
                 if (click) {
                     // A click moves keyboard focus to a focusable control and takes
                     // it away from anything else, like a browser form does.

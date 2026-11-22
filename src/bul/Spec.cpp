@@ -205,6 +205,17 @@ std::unique_ptr<Widget> Table::buildContent() const {
     return table;
 }
 
+std::unique_ptr<Widget> ScrollView::buildContent() const {
+    auto view = std::make_unique<bul::ScrollView>();
+    view->viewport(viewport);
+    view->scrollbar(scrollbar);
+    if (content) {
+        if (auto built = content->build()) {
+            view->content(std::move(built));
+        }
+    }
+    return view;
+}
 std::unique_ptr<Widget> FieldLabel::buildContent() const {
     auto label = std::make_unique<bul::FieldLabel>(text, scale);
     label->required(required);

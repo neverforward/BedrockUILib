@@ -27,6 +27,7 @@ bool                             loggedWindow{};
 bool                             loggedPushResult{};
 Theme                            theme = Theme::neutral();
 Widget*                          hovered{};
+Widget*                          captured{};
 Widget*                          focused{};
 bool                             keyboardOwned{};
 std::vector<EditAction>          pendingEdits;

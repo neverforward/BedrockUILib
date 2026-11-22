@@ -22,6 +22,8 @@ public:
 
     [[nodiscard]] float textWidth(std::string_view text, float size) const override;
     [[nodiscard]] float lineHeight(float size) const override;
+    void                pushClip(Rect const& rect) override;
+    void                popClip() override;
     void                flush() override;
 
     /// The whole UI surface in GUI units.
