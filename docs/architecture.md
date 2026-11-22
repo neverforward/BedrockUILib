@@ -10,7 +10,7 @@ src/                         pure logic, no mc/ or ll/ includes, unit-tested
   bul/Color.h                Rgba with fromRgb / fromArgb / withAlpha
   bul/TextMetrics.h          measurement interface + UTF-8 safe truncateToWidth
   bul/Version.h              version and ABI macros
-  bul/Layout.*               PLANNED: row/column/scroll/grid/table solving
+  bul/Layout.*               row/column/scroll/grid/table solving, unit tested
   bul/HitTest.*              PLANNED: point -> widget, z-order aware
   bul/Focus.*                PLANNED: focus order, tab/arrow transitions, modal scope
   bul/Theme.*                PLANNED: theme tokens + neutral defaults + overrides

@@ -3,6 +3,7 @@
 #include <algorithm>
 #include <utility>
 
+#include "bul/Layout.h"
 #include "bul/Theme.h"
 
 namespace bul {
@@ -46,58 +47,27 @@ void Stack::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
         return;
     }
 
-    bool const        vertical = mDirection == Direction::Vertical;
-    std::vector<Size> sizes;
-    sizes.reserve(mEntries.size());
+    bool const vertical = mDirection == Direction::Vertical;
 
-    float fixedMain = 0.f;
-    float stretch   = 0.f;
-    for (std::size_t i = 0; i < mEntries.size(); ++i) {
-        Size const size = mEntries[i].child->measure(mBounds.width, theme, canvas);
-        sizes.push_back(size);
-        if (mEntries[i].stretch > 0.f) {
-            stretch += mEntries[i].stretch;
-        } else {
-            fixedMain += vertical ? size.height : size.width;
-        }
+    std::vector<layout::Item> items;
+    items.reserve(mEntries.size());
+    for (auto const& entry : mEntries) {
+        items.push_back(layout::Item{entry.child->measure(mBounds.width, theme, canvas), entry.stretch});
     }
 
-    // A stretched child gets a share of what the fixed children leave -- not its
-    // measured size plus a remainder. That is what keeps a row of weighted
-    // columns inside the row even when one child's measurement already claimed
-    // the full available width (a text field with a long value does exactly
-    // that), which used to push the last column out of the window.
-    float const available = vertical ? mBounds.height : mBounds.width;
-    float const gaps      = gap * static_cast<float>(mEntries.size() - 1);
-    float const leftover  = std::max(available - gaps - fixedMain, 0.f);
-
-    float cursor = vertical ? mBounds.y : mBounds.x;
+    // A column stretches its children across the width (the usual full-width
+    // row), but each child keeps its own height; a row must not stretch the
+    // cross axis, or buttons of different sizes would all grow to the tallest.
+    layout::BoxSpec const spec{
+        .axis  = vertical ? layout::Axis::Vertical : layout::Axis::Horizontal,
+        .gap   = gap,
+        .align = vertical ? layout::Align::Stretch : layout::Align::Start,
+    };
+    std::vector<Rect> const rects = layout::box(mBounds, items, spec);
     for (std::size_t i = 0; i < mEntries.size(); ++i) {
-        float width  = sizes[i].width;
-        float height = sizes[i].height;
-        if (stretch > 0.f && mEntries[i].stretch > 0.f) {
-            float const share = leftover * (mEntries[i].stretch / stretch);
-            if (vertical) {
-                height = share;
-            } else {
-                width = share;
-            }
-        }
-        if (vertical) {
-            // A column stretches its children across the width (the usual
-            // full-width row), but each child keeps its own height.
-            mEntries[i].child->layout({mBounds.x, cursor, mBounds.width, height}, theme, canvas);
-            cursor += height + gap;
-        } else {
-            // A row must NOT stretch the cross axis, otherwise children with
-            // different heights (button sizes) would all be drawn at the height
-            // of the tallest one.
-            mEntries[i].child->layout({cursor, mBounds.y, width, height}, theme, canvas);
-            cursor += width + gap;
-        }
+        mEntries[i].child->layout(rects[i], theme, canvas);
     }
 }
-
 void Stack::paintContent(Canvas& canvas, Theme const& theme) const {
     for (auto const& entry : mEntries) {
         entry.child->paint(canvas, theme);

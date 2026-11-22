@@ -22,6 +22,8 @@ Every node carries `common`, the `Widget` base properties: `margin`,
 `fixedWidth` / `fixedHeight`, `minWidth` / `maxWidth`, and the `onClick` /
 `onFocus` / `onBlur` / `onHover` handlers. The node structs — `Label`, `Button`,
 `Badge`, `Input`, `Field`, `Stack`, `Select`, `Checkbox`, `Switch`,
-`RadioGroup` — are aggregates, so a designated initializer reads like the
-object it describes. Children are wrapped with `spec::node(...)`, and
-`spec::build(...)` returns the finished `Widget` tree.
+`RadioGroup`, `Grid`, `Table`, `FieldLabel`, `FieldDescription` — are aggregates,
+so a designated initializer reads like the object it describes. Children are
+wrapped with `spec::node(...)`, and `spec::build(...)` returns the finished
+`Widget` tree. Every widget in the kit has a node; a new component is expected to
+ship one.

@@ -10,7 +10,7 @@ src/                         纯逻辑，不 include mc/ 和 ll/，有单元测�
   bul/Color.h                Rgba，带 fromRgb / fromArgb / withAlpha
   bul/TextMetrics.h          度量接口 + UTF-8 安全的 truncateToWidth
   bul/Version.h              版本和 ABI 宏
-  bul/Layout.*               计划中：行/列/滚动/网格/表格求解
+  bul/Layout.*               行/列/滚动/网格/表格求解，有单测
   bul/HitTest.*              计划中：点 -> 控件，考虑 z-order
   bul/Focus.*                计划中：焦点顺序、Tab/方向键切换、模态作用域
   bul/Theme.*                计划中：主题 token + 中性默认值 + 覆盖

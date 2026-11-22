@@ -175,3 +175,58 @@ TEST(Spec, BuildsTheStatefulControls) {
     ASSERT_NE(radios, nullptr);
     EXPECT_EQ(radios->value(), "two");
 }
+
+TEST(Spec, BuildsAGridOfNodes) {
+    auto tree = bul::spec::build(
+        bul::spec::Grid{
+            .columns  = 2,
+            .gap      = 4.f,
+            .children = {
+                         bul::spec::node(bul::spec::Label{.text = "One"}),
+                         bul::spec::node(bul::spec::Label{.text = "Two"}),
+                         },
+    }
+    );
+
+    EXPECT_EQ(tree->typeName(), "Grid");
+    bul::test::FakeCanvas canvas;
+    tree->layout({0.f, 0.f, 100.f, 40.f}, testTheme(), canvas);
+    EXPECT_EQ(tree->width(), 100.f);
+}
+
+TEST(Spec, BuildsATableWithTracksAndCells) {
+    auto tree = bul::spec::build(
+        bul::spec::Table{
+            .columns = {{.value = 40.f}, {.weight = 1.f}},
+            .rows    = {{.weight = 1.f}},
+            .cells   = {
+                        {.row = 0, .column = 0, .control = bul::spec::node(bul::spec::Label{.text = "Name"})},
+                        {.row = 0, .column = 1, .control = bul::spec::node(bul::spec::Label{.text = "Value"})},
+                        },
+    }
+    );
+
+    EXPECT_EQ(tree->typeName(), "Table");
+    bul::Table* table = dynamic_cast<bul::Table*>(tree.get());
+    ASSERT_NE(table, nullptr);
+    EXPECT_TRUE(table->border());
+    auto noBorder = bul::spec::build(
+        bul::spec::Table{
+            .columns = {{.weight = 1.f}},
+            .rows    = {{.weight = 1.f}},
+            .border  = false,
+            .cells   = {{.row = 0, .column = 0, .control = bul::spec::node(bul::spec::Label{.text = "x"})}},
+        }
+    );
+    bul::Table* plain = dynamic_cast<bul::Table*>(noBorder.get());
+    ASSERT_NE(plain, nullptr);
+    EXPECT_FALSE(plain->border());
+}
+
+TEST(Spec, BuildsFieldParts) {
+    auto label = bul::spec::build(bul::spec::FieldLabel{.text = "Name", .required = true});
+    EXPECT_EQ(label->typeName(), "FieldLabel");
+
+    auto description = bul::spec::build(bul::spec::FieldDescription{.text = "Hint"});
+    EXPECT_EQ(description->typeName(), "FieldDescription");
+}

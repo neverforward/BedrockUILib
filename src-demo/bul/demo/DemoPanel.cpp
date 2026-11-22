@@ -51,7 +51,9 @@ enum class Page : std::size_t {
     Widget   = 7,
     Switch   = 8,
     Spec     = 9,
-    Style    = 10
+    Style    = 10,
+    Grid     = 11,
+    Table    = 12
 };
 
 /// The gallery's router: one page is live at a time and the widget protocol is
@@ -162,6 +164,8 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     entry("Switch", Page::Switch);
     entry("Spec", Page::Spec);
     entry("Style", Page::Style);
+    entry("Grid", Page::Grid);
+    entry("Table", Page::Table);
     return page("BedrockUILib", "A native widget kit. Pick a component.", std::move(menu), {});
 }
 
@@ -756,6 +760,92 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     body->add(std::move(tree));
     return page("Spec", "A tree built from structs, not make_unique chains.", std::move(body), back);
 }
+// --------------------------------------------------------------------- grid page
+
+[[nodiscard]] std::unique_ptr<Widget> gridPage(std::function<void()> back) {
+    auto body = column(8.f);
+    body->add(caption("Grid: equal cells, row-major, three columns."));
+
+    {
+        auto grid = std::make_unique<Grid>(3);
+        grid->gap(6.f);
+        for (int i = 1; i <= 6; ++i) {
+            auto button = std::make_unique<Button>("Cell " + std::to_string(i));
+            button->type(Button::Type::Outline);
+            grid->add(std::move(button));
+        }
+        body->add(std::move(grid));
+    }
+
+    body->add(caption("Two columns: the cells split the width evenly."));
+    {
+        auto grid = std::make_unique<Grid>(2);
+        grid->gap(6.f);
+        grid->add(std::make_unique<Label>("Left column"));
+        grid->add(std::make_unique<Label>("Right column"));
+        grid->add(std::make_unique<Badge>("A badge"));
+        auto toggle = std::make_unique<Switch>();
+        toggle->text("A switch");
+        grid->add(std::move(toggle));
+        body->add(std::move(grid));
+    }
+    body->add(caption("The same container described by a spec tree."));
+    body->add(
+        bul::spec::build(
+            bul::spec::Grid{
+                .columns  = 2,
+                .gap      = 6.f,
+                .children = {
+                             bul::spec::node(bul::spec::Label{.text = "Spec cell"}),
+                             bul::spec::node(bul::spec::Button{.text = "Spec button"}),
+                             },
+    }
+        )
+    );
+    return page("Grid", "Equal cells, row-major, solved by layout::grid.", std::move(body), back);
+}
+
+// -------------------------------------------------------------------- table page
+
+[[nodiscard]] std::unique_ptr<Widget> tablePage(std::function<void()> back) {
+    auto body = column(8.f);
+    body->add(caption("Table: a fixed name column, a flexible value column."));
+
+    {
+        auto table = std::make_unique<Table>();
+        table->column({.value = 90.f});
+        table->column({.weight = 1.f});
+        // Every row is a weight: the rows stay the same height instead of the
+        // fixed header row being shorter than the data rows.
+        table->row({.weight = 1.f});
+        table->row({.weight = 1.f});
+        table->row({.weight = 1.f});
+        table->cell(0, 0, std::make_unique<Label>("Name", 0.9f));
+        table->cell(0, 1, std::make_unique<Label>("Value", 0.9f));
+        table->cell(1, 0, std::make_unique<Label>("Gold"));
+        table->cell(1, 1, std::make_unique<Label>("12"));
+        table->cell(2, 0, std::make_unique<Label>("Level"));
+        table->cell(2, 1, std::make_unique<Label>("42"));
+        body->add(std::move(table));
+    }
+
+    body->add(caption("A spec tree: tracks and cells as data (no border)."));
+    body->add(
+        bul::spec::build(
+            bul::spec::Table{
+                // The same tracks as the table above, so the columns line up.
+                .columns = {{.value = 90.f}, {.weight = 1.f}},
+                .rows    = {{.weight = 1.f}},
+                .border  = false,
+                .cells   = {
+                            {.row = 0, .column = 0, .control = bul::spec::node(bul::spec::Label{.text = "Spec"})},
+                            {.row = 0, .column = 1, .control = bul::spec::node(bul::spec::Label{.text = "table"})},
+                            },
+    }
+        )
+    );
+    return page("Table", "Cells on fixed and flexible tracks, solved by layout::table.", std::move(body), back);
+}
 // -------------------------------------------------------------------- style page
 
 /// Theme presets: setTheme repaints the whole window with the new palette, so a
@@ -878,6 +968,8 @@ void clearClassRules() { setStyleSheet({}); }
     view->add(switchPage(back));
     view->add(specPage(back));
     view->add(stylePage(back));
+    view->add(gridPage(back));
+    view->add(tablePage(back));
     return router;
 }
 

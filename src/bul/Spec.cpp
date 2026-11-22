@@ -167,4 +167,58 @@ std::unique_ptr<Widget> RadioGroup::buildContent() const {
     return group;
 }
 
+std::unique_ptr<Widget> Grid::buildContent() const {
+    auto grid = std::make_unique<bul::Grid>(columns);
+    if (gap >= 0.f) {
+        grid->gap(gap);
+    }
+    for (auto const& child : children) {
+        if (auto built = child->build()) {
+            grid->add(std::move(built));
+        }
+    }
+    return grid;
+}
+
+std::unique_ptr<Widget> Table::buildContent() const {
+    auto table = std::make_unique<bul::Table>();
+    for (auto const& track : columns) {
+        table->column(track);
+    }
+    for (auto const& track : rows) {
+        table->row(track);
+    }
+    table->gap(columnGap, rowGap);
+    table->padding(padding);
+    table->cellPadding(cellPadding);
+    table->border(border);
+    if (borderColor) {
+        table->borderColor(*borderColor);
+    }
+    for (auto const& cell : cells) {
+        if (cell.control) {
+            if (auto built = cell.control->build()) {
+                table->cell(cell.row, cell.column, std::move(built));
+            }
+        }
+    }
+    return table;
+}
+
+std::unique_ptr<Widget> FieldLabel::buildContent() const {
+    auto label = std::make_unique<bul::FieldLabel>(text, scale);
+    label->required(required);
+    label->muted(muted);
+    if (badge) {
+        if (auto built = badge->build()) {
+            label->badge(std::move(built));
+        }
+    }
+    return label;
+}
+
+std::unique_ptr<Widget> FieldDescription::buildContent() const {
+    return std::make_unique<bul::FieldDescription>(text, scale);
+}
+
 } // namespace bul::spec

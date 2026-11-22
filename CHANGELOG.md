@@ -28,6 +28,9 @@ under `### Changed`.
   (`item`, `value` / `onValueChange`, `open` / `onOpenChange`).
 - `Checkbox`: a box with an inline label (`checked` / `onCheckedChange`,
   `indeterminate`, `readOnly`).
+- `Grid`: equal cells in N columns (row-major) and `Table`: cells on fixed and flexible `layout::Track` columns and rows; both are containers over the layout solver, and `Table` draws its outer border and separators by default (`border(false)` turns them off), with 4 units of cell padding inside each cell (`cellPadding(...)`, so text stays off the lines) and the separators running border to border; every row band is the same height.
+- Spec nodes for every widget: `Grid`, `Table`, `FieldLabel` and `FieldDescription` join the existing `Label` / `Button` / `Badge` / `Input` / `Field` / `Stack` / `Select` / `Checkbox` / `Switch` / `RadioGroup`.
+- `bul/Layout.h`: the layout solver -- `box` (row/column with grow, gap, padding and cross-axis align), `grid`, `table` (fixed and flexible tracks), `clampScroll` / `isVisible` / `scrollThumb` and the extent helpers; `Stack` now lays out through it.
 - `StyleSheet`: CSS-like rules (`type` / `className` / `id` selectors, specificity) that colour whole components over the theme; an inline `Style` still wins.
 - `Style`: per-widget colour overrides merged over the inherited `Theme` (inline style over the theme, inherited down the tree); the spec `Common` carries one.
 - `bul::spec`: declarative trees (`spec::Stack`, `spec::Field`, ... built with `spec::build` / `spec::node`), sharing the `Widget` base properties.

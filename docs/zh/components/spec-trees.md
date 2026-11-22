@@ -17,4 +17,4 @@ auto tree = bul::spec::build(bul::spec::Stack{
 bul::showModal(std::move(tree));
 ```
 
-每个节点都带 `common`，即 `Widget` 基类属性：`margin`、`fixedWidth` / `fixedHeight`、`minWidth` / `maxWidth`，以及 `onClick` / `onFocus` / `onBlur` / `onHover` 回调。节点结构体——`Label`、`Button`、`Badge`、`Input`、`Field`、`Stack`、`Select`、`Checkbox`、`Switch`、`RadioGroup`——都是聚合体，指定初始化写起来就像它描述的对象本身。子节点用 `spec::node(...)` 包一层，`spec::build(...)` 返回构建好的 `Widget` 树。
+每个节点都带 `common`，即 `Widget` 基类属性：`margin`、`fixedWidth` / `fixedHeight`、`minWidth` / `maxWidth`，以及 `onClick` / `onFocus` / `onBlur` / `onHover` 回调。节点结构体——`Label`、`Button`、`Badge`、`Input`、`Field`、`Stack`、`Select`、`Checkbox`、`Switch`、`RadioGroup`、`Grid`、`Table`、`FieldLabel`、`FieldDescription`——都是聚合体，指定初始化写起来就像它描述的对象本身。子节点用 `spec::node(...)` 包一层，`spec::build(...)` 返回构建好的 `Widget` 树。套件里每个控件都有对应节点；新增组件时也应一并提供。

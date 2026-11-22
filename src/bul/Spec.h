@@ -256,4 +256,57 @@ struct RadioGroup {
     [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
 };
 
+/// A grid of equal cells, the declarative Grid.
+struct Grid {
+    Common                             common{};
+    std::size_t                        columns{2};
+    float                              gap{-1.f};
+    std::vector<std::shared_ptr<Node>> children{};
+
+    [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
+};
+
+/// A table of cells on fixed and flexible tracks, the declarative Table.
+struct Table {
+    struct Cell {
+        std::size_t           row{};
+        std::size_t           column{};
+        std::shared_ptr<Node> control{};
+    };
+
+    Common                     common{};
+    std::vector<layout::Track> columns{};
+    std::vector<layout::Track> rows{};
+    float                      columnGap{};
+    float                      rowGap{};
+    float                      padding{};
+    float                      cellPadding{4.f};
+    bool                       border{true};
+    std::optional<Rgba>        borderColor{};
+    std::vector<Cell>          cells{};
+
+    [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
+};
+
+/// The label of a field (usually built by Field).
+struct FieldLabel {
+    Common                common{};
+    std::string           text{};
+    float                 scale{1.f};
+    bool                  required{};
+    bool                  muted{};
+    std::shared_ptr<Node> badge{};
+
+    [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
+};
+
+/// The helper line of a field (usually built by Field).
+struct FieldDescription {
+    Common      common{};
+    std::string text{};
+    float       scale{0.85f};
+
+    [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
+};
+
 } // namespace bul::spec

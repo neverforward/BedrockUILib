@@ -41,6 +41,8 @@ export default defineConfig({
         items: [
           { text: 'Overview', link: '/components/' },
           { text: 'Layout', link: '/components/layout' },
+          { text: 'Grid', link: '/components/grid' },
+          { text: 'Table', link: '/components/table' },
           { text: 'Widget base', link: '/components/widget-base' },
           { text: 'Style', link: '/components/style' },
           { text: 'Stylesheets', link: '/components/stylesheets' },
@@ -87,6 +89,8 @@ export default defineConfig({
             items: [
               { text: '总览', link: '/zh/components/' },
               { text: '布局', link: '/zh/components/layout' },
+              { text: '网格', link: '/zh/components/grid' },
+              { text: '表格', link: '/zh/components/table' },
               { text: '控件基类', link: '/zh/components/widget-base' },
               { text: '样式', link: '/zh/components/style' },
               { text: '样式表', link: '/zh/components/stylesheets' },
