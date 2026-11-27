@@ -9,6 +9,10 @@
 #include "bul/widget/Stack.h"
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct RadioGroup;
+}
+
 namespace bul {
 
 /// A group of radio buttons: exactly one option can be chosen.
@@ -20,6 +24,9 @@ namespace bul {
 class BUL_API RadioGroup final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "RadioGroup"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    RadioGroup& apply(spec::RadioGroup const& node);
 
     RadioGroup();
     ~RadioGroup() override; // defined in the .cpp: the radios are incomplete here

@@ -1,10 +1,14 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Switch.h"
 
 #include <algorithm>
 #include <cmath>
 #include <utility>
 
+#include "bul/Spec.h"
 #include "bul/Theme.h"
+
 #include "bul/widget/TextFlow.h"
 
 namespace bul {
@@ -163,4 +167,21 @@ bool Switch::key(KeyStroke const& stroke) {
     return false;
 }
 
+
+Switch& Switch::apply(spec::Switch const& node) {
+    if (!node.text.empty()) {
+        text(node.text);
+    }
+    checked(node.checked);
+    readOnly(node.readOnly);
+    disabled(node.disabled);
+    invalid(node.invalid);
+    if (node.required) {
+        required(true);
+    }
+    if (node.onCheckedChange) {
+        onCheckedChange(node.onCheckedChange);
+    }
+    return *this;
+}
 } // namespace bul

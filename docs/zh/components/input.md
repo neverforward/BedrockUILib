@@ -11,6 +11,23 @@ input->onChange([](std::string const& value) { /* 每次编辑都调 */ });
 field->control(std::move(input));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.field(
+        "Email",
+        [&] {
+            ui.input("you@example.com", "", [](bul::Input& input) {
+                input.onChange([](std::string const& value) { /* 每次编辑都会调用 */ });
+            });
+        },
+        "Shown under the input."
+    );
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `value(text)` / `value()` | 文本。代码里设置不触发 `onChange`；用户编辑才触发。 |

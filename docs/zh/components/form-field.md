@@ -21,4 +21,18 @@ field.disabled(true);          // 标签、说明、控件一起变灰
 input.disabled(true);          // 不用 field，单个控件同样效果
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.field(
+        "Name",
+        [&] { ui.input("Ada Lovelace"); },
+        "Shown under the input.",
+        [](bul::Field& field) { field.orientation(bul::Field::Orientation::Horizontal); }
+    );
+});
+```
+
+
 两种写法都成立，互不覆盖。

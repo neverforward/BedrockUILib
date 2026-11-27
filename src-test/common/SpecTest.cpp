@@ -244,3 +244,111 @@ TEST(Spec, BuildsAScrollView) {
     ASSERT_NE(view, nullptr);
     EXPECT_TRUE(view->scrollbar());
 }
+
+TEST(Spec, AFactoryNodeJoinsAStructTree) {
+    struct Divider final : bul::Widget {
+        [[nodiscard]] std::string_view typeName() const noexcept override { return "Divider"; }
+        [[nodiscard]] bul::Size        measureContent(float, bul::Theme const&, bul::Canvas const&) const override {
+            return {0.f, 1.f};
+        }
+        void paintContent(bul::Canvas&, bul::Theme const&) const override {}
+    };
+
+    auto tree = bul::spec::build(
+        bul::spec::Stack{
+            .children = {bul::spec::factory([] { return std::make_unique<Divider>(); })},
+        }
+    );
+
+    EXPECT_EQ(tree->typeName(), "Stack");
+}
+
+TEST(Spec, WeightedStackChildrenShareTheRoom) {
+    bul::test::FakeCanvas canvas;
+    bul::Theme const      theme = testTheme();
+
+    auto tree = bul::spec::build(
+        bul::spec::Stack{
+            .children = {
+                         bul::spec::node(bul::spec::Label{.text = "A"}),
+                         bul::spec::weighted(bul::spec::node(bul::spec::Label{.text = "B"}), 1.f),
+                         },
+    }
+    );
+
+    tree->layout({0.f, 0.f, 100.f, 100.f}, theme, canvas);
+    tree->paint(canvas, theme);
+
+    ASSERT_EQ(canvas.texts.size(), 2u);
+    EXPECT_EQ(canvas.texts[0].topLeft.y, 0.f);
+    // A is 9 tall, the gap is the theme's 6, so the weighted B starts at 15 and
+    // takes the rest.
+    EXPECT_EQ(canvas.texts[1].topLeft.y, 15.f);
+}
+
+TEST(Spec, CommonCarriesTheStyleSheetSelectors) {
+    auto tree = bul::spec::build(
+        bul::spec::Label{
+            .common = {.className = "danger", .id = "submit"},
+            .text   = "Hello",
+    }
+    );
+
+    EXPECT_EQ(tree->className(), "danger");
+    EXPECT_EQ(tree->id(), "submit");
+}
+
+TEST(Spec, LabelTakesLineSpacingAndElide) {
+    auto tree = bul::spec::build(
+        bul::spec::Label{
+            .text        = "Hello",
+            .lineSpacing = 1.5f,
+            .elide       = true,
+        }
+    );
+
+    auto* label = dynamic_cast<bul::Label*>(tree.get());
+    ASSERT_NE(label, nullptr);
+    EXPECT_FLOAT_EQ(label->lineSpacing(), 1.5f);
+    EXPECT_TRUE(label->elide());
+}
+
+TEST(Spec, SelectTakesItsOpenState) {
+    auto tree = bul::spec::build(
+        bul::spec::Select{
+            .items = {{.value = "a", .label = "A"}},
+            .open  = true,
+        }
+    );
+
+    auto* select = dynamic_cast<bul::Select*>(tree.get());
+    ASSERT_NE(select, nullptr);
+    EXPECT_TRUE(select->open());
+}
+
+TEST(Spec, InputTakesItsFileBits) {
+    auto tree = bul::spec::build(
+        bul::spec::Input{
+            .kind     = bul::Input::Kind::File,
+            .filePath = "C:/data/config.json",
+        }
+    );
+
+    auto* input = dynamic_cast<bul::Input*>(tree.get());
+    ASSERT_NE(input, nullptr);
+    EXPECT_EQ(input->filePath(), "C:/data/config.json");
+}
+
+TEST(Spec, FieldCanUseACustomLabel) {
+    auto tree = bul::spec::build(
+        bul::spec::Field{
+            .labelWidget = bul::spec::node(bul::spec::Badge{.text = "Beta"}),
+            .control     = bul::spec::node(bul::spec::Input{.placeholder = "x"}),
+        }
+    );
+
+    auto* field = dynamic_cast<bul::Field*>(tree.get());
+    ASSERT_NE(field, nullptr);
+    ASSERT_NE(field->labelWidget(), nullptr);
+    EXPECT_EQ(field->labelWidget()->typeName(), "Badge");
+}

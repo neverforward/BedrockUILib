@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Stack.h"
 
 #include <algorithm>
@@ -112,4 +114,16 @@ void Stack::collectOverlays(std::vector<Widget*>& out) {
     }
 }
 
+
+Stack& Stack::apply(spec::Stack const& node) {
+    if (node.gap >= 0.f) {
+        gap(node.gap);
+    }
+    for (auto const& child : node.children) {
+        if (child.node) {
+            add(child.node->build(), child.stretch);
+        }
+    }
+    return *this;
+}
 } // namespace bul

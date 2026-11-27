@@ -16,6 +16,22 @@ view->content(std::move(list));
 view->scrollBy(24.f);  // programmatic scroll
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.scroll(
+        120.f,
+        [&] {
+            for (int i = 1; i <= 20; ++i) {
+                ui.label("Row " + std::to_string(i));
+            }
+        },
+        [](bul::ScrollView& view) { view.scrollBy(24.f); }
+    );
+});
+```
+
 | Member | Meaning |
 | --- | --- |
 | `content(child)` | The single content widget, usually a `Stack`. |
@@ -23,10 +39,12 @@ view->scrollBy(24.f);  // programmatic scroll
 | `scrollbar(bool)` | Draws the bar on the right edge; on by default. |
 | `scrollTo(value)` / `scrollBy(delta)` / `offset()` | Programmatic scrolling; the offset is clamped to `content - viewport`. |
 | `contentHeight()` / `scrollable()` | What was measured and whether anything is hidden. |
+| `wheelStep(n)` | Distance one wheel notch scrolls; 24 units by default. |
 
 When the bar is shown the content stops short of it: the lane is 4 units wide and
 the content keeps another 4 units of gutter, so text and controls never sit on the
 bar. Without scrolling there is no lane and the content uses the full width.
+
 The bar is solved by `layout::scrollThumb`, so it shrinks with the visible
 fraction and slides with the offset. The content is painted inside
 `Canvas::pushClip`, so rows at the edge are cut by the viewport instead of
@@ -38,5 +56,5 @@ content under the bar does not receive the drag.
 
 The wheel is routed by the host: it is offered to the widget under the pointer,
 bubbles through the containers above it, and a `ScrollView` scrolls one
-`wheelStep` (24 units by default) per notch. A consumer can still call `scrollTo`
-or `scrollBy` from its own input.
+`wheelStep` per notch. A consumer can still call `scrollTo` or `scrollBy` from its
+own input.

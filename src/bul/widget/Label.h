@@ -5,6 +5,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Label;
+}
+
 namespace bul {
 
 /// Vertical placement of a text block inside the label's bounds.
@@ -78,6 +82,9 @@ public:
     }
 
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Label"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Label& apply(spec::Label const& node);
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paintContent(Canvas&, Theme const&) const override;

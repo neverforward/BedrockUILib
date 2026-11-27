@@ -6,6 +6,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Checkbox;
+}
+
 namespace bul {
 
 /// A checkbox with an inline label.
@@ -45,6 +49,9 @@ public:
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Checkbox"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Checkbox& apply(spec::Checkbox const& node);
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paintContent(Canvas&, Theme const&) const override;

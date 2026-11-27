@@ -9,6 +9,10 @@
 #include "bul/TextEdit.h"
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Input;
+}
+
 namespace bul {
 
 /// A single line text field.
@@ -24,6 +28,9 @@ namespace bul {
 class BUL_API Input final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Input"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Input& apply(spec::Input const& node);
 
     enum class Kind { Text, Password, Search, File };
 

@@ -9,6 +9,17 @@ box->onCheckedChange([](bool checked) { /* the new state */ });
 field->control(std::move(box));
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.checkbox("Accept terms", false, [](bul::Checkbox& box) {
+        box.onCheckedChange([](bool checked) { /* the new state */ });
+    });
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `text(text)` | The inline label drawn right of the box (`Checkbox`'s enclosing label in Base UI). The field's own label, when there is one, is the group heading. |

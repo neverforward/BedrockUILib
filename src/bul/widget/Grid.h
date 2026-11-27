@@ -6,6 +6,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Grid;
+}
+
 namespace bul {
 
 /// A grid of equal cells, row-major: items go left to right, then wrap.
@@ -15,6 +19,9 @@ namespace bul {
 class BUL_API Grid final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Grid"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Grid& apply(spec::Grid const& node);
 
     explicit Grid(std::size_t columns = 2);
 

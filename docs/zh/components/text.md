@@ -12,6 +12,21 @@ label->align(bul::Align::Center);
 label->verticalAlign(bul::VAlign::Center);
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.label("Long enough to need a second line.", 1.f, false, [](bul::Label& label) {
+        label.wrap(true);        // 在空格处断行，CJK 字间也可断
+        label.maxWidth(160.f);   // 保持可读的栏宽
+        label.lineSpacing(2.f);
+        label.maxLines(2);       // 第二行以 "..." 结尾
+        label.align(bul::Align::Center);
+        label.verticalAlign(bul::VAlign::Center);
+    });
+});
+```
+
 | 成员 | 含义 |
 | --- | --- |
 | `text(t)` / `text()` | 字符串。显式 `\n` 总是另起一行。 |

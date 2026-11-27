@@ -5,6 +5,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Field;
+}
+
 namespace bul {
 
 /// A form field: a label, one control and a description, plus the state
@@ -21,6 +25,9 @@ namespace bul {
 class BUL_API Field final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Field"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Field& apply(spec::Field const& node);
 
     enum class Orientation { Vertical, Horizontal };
 

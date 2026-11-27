@@ -13,6 +13,20 @@ label->align(bul::Align::Center);
 label->verticalAlign(bul::VAlign::Center);
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.label("Long enough to need a second line.", 1.f, false, [](bul::Label& label) {
+        label.wrap(true);        // break at spaces, and between CJK characters
+        label.maxWidth(160.f);   // keep a readable column width
+        label.lineSpacing(2.f);
+        label.maxLines(2);       // the second line ends with "..."
+        label.align(bul::Align::Center);
+        label.verticalAlign(bul::VAlign::Center);
+    });
+});
+```
 | Member | Meaning |
 | --- | --- |
 | `text(t)` / `text()` | The string. Explicit `\n` always starts a new line. |

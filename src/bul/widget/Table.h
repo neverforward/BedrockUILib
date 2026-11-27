@@ -8,6 +8,10 @@
 #include "bul/Layout.h"
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Table;
+}
+
 namespace bul {
 
 /// A table of cells: columns and rows are `layout::Track`s (a fixed size, or a
@@ -18,6 +22,9 @@ namespace bul {
 class BUL_API Table final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Table"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Table& apply(spec::Table const& node);
 
     /// Appends a column track (fixed `value` or flexible `weight`).
     Table& column(layout::Track track);

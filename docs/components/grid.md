@@ -12,6 +12,22 @@ grid->add(std::make_unique<bul::Button>("Two"));
 grid->add(std::make_unique<bul::Button>("Three"));
 ```
 
+Or with a spec tree
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.grid(
+        3,
+        [&] {
+            ui.button("One", [] {});
+            ui.button("Two", [] {});
+            ui.button("Three", [] {});
+        },
+        [](bul::Grid& grid) { grid.gap(6.f); }
+    );
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `Grid(columns)` / `columns(n)` | Cells per row; the last row may be short. |

@@ -1,10 +1,16 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Field.h"
 
 #include <algorithm>
 #include <utility>
 
+#include "bul/Spec.h"
 #include "bul/Theme.h"
+
+#include "bul/Spec.h"
 #include "bul/widget/FieldDescription.h"
+
 #include "bul/widget/FieldLabel.h"
 
 namespace bul {
@@ -248,4 +254,34 @@ void Field::collectOverlays(std::vector<Widget*>& out) {
     }
 }
 
+
+Field& Field::apply(spec::Field const& node) {
+    if (!node.label.empty()) {
+        label(node.label);
+    }
+    if (node.labelWidget) {
+        if (auto built = node.labelWidget->build()) {
+            label(std::move(built));
+        }
+    }
+    if (node.control) {
+        control(node.control->build());
+    }
+    if (node.descriptionWidget) {
+        if (auto built = node.descriptionWidget->build()) {
+            description(std::move(built));
+        }
+    }
+    if (!node.description.empty()) {
+        description(node.description);
+    }
+    orientation(node.orientation);
+    if (node.gap >= 0.f) {
+        gap(node.gap);
+    }
+    disabled(node.disabled);
+    invalid(node.invalid);
+    required(node.required);
+    return *this;
+}
 } // namespace bul

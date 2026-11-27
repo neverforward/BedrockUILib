@@ -5,6 +5,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Button;
+}
+
 namespace bul {
 
 /// A push button.
@@ -16,6 +20,9 @@ namespace bul {
 class BUL_API Button final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Button"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Button& apply(spec::Button const& node);
 
     enum class Type { Default, Secondary, Destructive, Outline, Link };
     enum class Size { XSmall, Small, Default, Large };

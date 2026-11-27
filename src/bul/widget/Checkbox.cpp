@@ -1,9 +1,13 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Checkbox.h"
 
 #include <algorithm>
 #include <utility>
 
+#include "bul/Spec.h"
 #include "bul/Theme.h"
+
 #include "bul/widget/TextFlow.h"
 
 namespace bul {
@@ -159,4 +163,22 @@ bool Checkbox::key(KeyStroke const& stroke) {
     return false;
 }
 
+
+Checkbox& Checkbox::apply(spec::Checkbox const& node) {
+    if (!node.text.empty()) {
+        text(node.text);
+    }
+    checked(node.checked);
+    indeterminate(node.indeterminate);
+    readOnly(node.readOnly);
+    disabled(node.disabled);
+    invalid(node.invalid);
+    if (node.required) {
+        required(true);
+    }
+    if (node.onCheckedChange) {
+        onCheckedChange(node.onCheckedChange);
+    }
+    return *this;
+}
 } // namespace bul

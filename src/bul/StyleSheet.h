@@ -59,7 +59,7 @@ private:
 
 /// The active sheet, the document of the UI: every widget resolves its style
 /// against it while painting.
-BUL_API void setStyleSheet(StyleSheet sheet);
+BUL_API void                            setStyleSheet(StyleSheet sheet);
 [[nodiscard]] BUL_API StyleSheet const& styleSheet();
 
 } // namespace bul

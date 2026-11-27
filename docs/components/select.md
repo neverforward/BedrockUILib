@@ -15,6 +15,26 @@ select->onValueChange([](std::string const& value) { /* the new value */ });
 field->control(std::move(select));
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.field("Fruit", [&] {
+        ui.select(
+            "Choose a fruit",
+            {
+                {.value = "apple", .label = "Apple"},
+                {.value = "durian", .label = "Durian", .disabled = true},
+            },
+            [](bul::Select& select) {
+                select.onValueChange([](std::string const& value) { /* the new value */ });
+            }
+        );
+    });
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `item(value, label, disabled)` | One option. `Select.Item` + `ItemText`; the label defaults to the value, and a disabled option is drawn dimmed and cannot be chosen. |

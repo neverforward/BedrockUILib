@@ -1,9 +1,13 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Select.h"
 
 #include <algorithm>
 #include <utility>
 
+#include "bul/Spec.h"
 #include "bul/Theme.h"
+
 #include "bul/widget/TextFlow.h"
 
 namespace bul {
@@ -362,4 +366,28 @@ Widget* Select::overlayHitTest(Point) { return mOpen ? this : nullptr; }
 
 void Select::dismissOverlay() { setOpen(false); }
 
+
+Select& Select::apply(spec::Select const& node) {
+    if (!node.placeholder.empty()) {
+        placeholder(node.placeholder);
+    }
+    for (auto const& entry : node.items) {
+        item(entry.value, entry.label.empty() ? entry.value : entry.label, entry.disabled);
+    }
+    if (!node.value.empty()) {
+        value(node.value);
+    }
+    disabled(node.disabled);
+    required(node.required);
+    if (node.onValueChange) {
+        onValueChange(node.onValueChange);
+    }
+    if (node.onOpenChange) {
+        onOpenChange(node.onOpenChange);
+    }
+    if (node.open) {
+        open(true);
+    }
+    return *this;
+}
 } // namespace bul

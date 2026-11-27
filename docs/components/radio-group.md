@@ -12,6 +12,25 @@ group->onValueChange([](std::string const& value) { /* the new choice */ });
 field->control(std::move(group));
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.radio(
+        {
+            {.value = "starter", .text = "Starter"},
+            {.value = "pro", .text = "Pro"},
+            {.value = "team", .text = "Team", .disabled = true},
+        },
+        "",
+        [](bul::RadioGroup& group) {
+            group.onValueChange([](std::string const& value) { /* the new choice */ });
+        }
+    );
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `add(value, text, disabled)` | One option. The value is what `value()` returns and `onValueChange` reports. |

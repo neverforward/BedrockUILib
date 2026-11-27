@@ -9,6 +9,17 @@ switchWidget->onCheckedChange([](bool value) { /* 新状态 */ });
 field->control(std::move(switchWidget));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.toggle("Wi-Fi", false, [](bul::Switch& toggle) {
+        toggle.onCheckedChange([](bool value) { /* 新状态 */ });
+    });
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `text(t)` | 画在轨道右侧的内联标签。 |

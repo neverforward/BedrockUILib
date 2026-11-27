@@ -5,6 +5,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Stack;
+}
+
 namespace bul {
 
 /// Vertical or horizontal stack of children (the "row / column" primitive).
@@ -15,6 +19,9 @@ namespace bul {
 class BUL_API Stack final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Stack"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Stack& apply(spec::Stack const& node);
 
     enum class Direction { Vertical, Horizontal };
 

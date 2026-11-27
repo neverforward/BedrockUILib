@@ -7,6 +7,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Select;
+}
+
 namespace bul {
 
 /// A dropdown: a trigger that shows the current value, and a popup list of
@@ -56,6 +60,9 @@ public:
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Select"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Select& apply(spec::Select const& node);
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               layout(Rect const& outer, Theme const&, Canvas const&) override;

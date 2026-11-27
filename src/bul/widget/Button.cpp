@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Button.h"
 
 #include <utility>
@@ -96,4 +98,11 @@ void Button::activate() {
     }
 }
 
+
+Button& Button::apply(spec::Button const& node) {
+    type(node.type);
+    size(node.size);
+    disabled(node.disabled);
+    return *this;
+}
 } // namespace bul

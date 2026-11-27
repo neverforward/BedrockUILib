@@ -14,6 +14,26 @@ select->onValueChange([](std::string const& value) { /* 新值 */ });
 field->control(std::move(select));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.field("Fruit", [&] {
+        ui.select(
+            "Choose a fruit",
+            {
+                {.value = "apple", .label = "Apple"},
+                {.value = "durian", .label = "Durian", .disabled = true},
+            },
+            [](bul::Select& select) {
+                select.onValueChange([](std::string const& value) { /* 新值 */ });
+            }
+        );
+    });
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `item(value, label, disabled)` | 一个选项。`Select.Item` + `ItemText`；label 默认等于 value；禁用的选项画成灰的，不能选。 |

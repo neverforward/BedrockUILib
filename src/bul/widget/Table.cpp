@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Table.h"
 
 #include <algorithm>
@@ -203,4 +205,28 @@ void Table::collectOverlays(std::vector<Widget*>& out) {
     }
 }
 
+
+Table& Table::apply(spec::Table const& node) {
+    for (auto const& track : node.columns) {
+        column(track);
+    }
+    for (auto const& track : node.rows) {
+        row(track);
+    }
+    gap(node.columnGap, node.rowGap);
+    padding(node.padding);
+    cellPadding(node.cellPadding);
+    border(node.border);
+    if (node.borderColor) {
+        borderColor(*node.borderColor);
+    }
+    for (auto const& cell : node.cells) {
+        if (cell.control) {
+            if (auto built = cell.control->build()) {
+                this->cell(cell.row, cell.column, std::move(built));
+            }
+        }
+    }
+    return *this;
+}
 } // namespace bul

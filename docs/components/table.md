@@ -16,6 +16,24 @@ table->cell(1, 0, std::make_unique<bul::Label>("Gold"));
 table->cell(1, 1, std::make_unique<bul::Label>("12"));
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.table([](bul::Table& table) {
+        table.column({.value = 90.f});
+        table.column({.weight = 1.f});
+        table.row({.value = 9.f});
+        table.row({.weight = 1.f});
+        table.cell(0, 0, std::make_unique<bul::Label>("Name"));
+        table.cell(0, 1, std::make_unique<bul::Label>("Value"));
+        table.cell(1, 0, std::make_unique<bul::Label>("Gold"));
+        table.cell(1, 1, std::make_unique<bul::Label>("12"));
+    });
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `column(track)` / `row(track)` | Appends a track: `{.value}` fixed, `{.weight}` flexible. |

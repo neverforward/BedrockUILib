@@ -14,6 +14,24 @@ table->cell(1, 0, std::make_unique<bul::Label>("Gold"));
 table->cell(1, 1, std::make_unique<bul::Label>("12"));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.table([](bul::Table& table) {
+        table.column({.value = 90.f});
+        table.column({.weight = 1.f});
+        table.row({.value = 9.f});
+        table.row({.weight = 1.f});
+        table.cell(0, 0, std::make_unique<bul::Label>("Name"));
+        table.cell(0, 1, std::make_unique<bul::Label>("Value"));
+        table.cell(1, 0, std::make_unique<bul::Label>("Gold"));
+        table.cell(1, 1, std::make_unique<bul::Label>("12"));
+    });
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `column(track)` / `row(track)` | 追加一条轨道：`{.value}` 固定，`{.weight}` 弹性。 |

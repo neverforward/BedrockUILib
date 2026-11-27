@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Input.h"
 
 #include <algorithm>
@@ -6,8 +8,10 @@
 #include <utility>
 #include <vector>
 
+#include "bul/Spec.h"
 #include "bul/TextMetrics.h"
 #include "bul/Theme.h"
+
 #include "bul/widget/TextFlow.h"
 
 namespace bul {
@@ -445,4 +449,37 @@ void Input::notifyChanged(std::string const& previous) {
     }
 }
 
+
+Input& Input::apply(spec::Input const& node) {
+    placeholder(node.placeholder);
+    kind(node.kind);
+    disabled(node.disabled);
+    invalid(node.invalid);
+    required(node.required);
+    if (node.maxLength > 0) {
+        maxLength(node.maxLength);
+    }
+    if (!node.filePath.empty()) {
+        filePath(node.filePath);
+    }
+    if (!node.chooseText.empty()) {
+        chooseText(node.chooseText);
+    }
+    if (!node.emptyFileText.empty()) {
+        emptyFileText(node.emptyFileText);
+    }
+    if (node.validator) {
+        validator(node.validator);
+    }
+    if (node.onChoose) {
+        onChoose(node.onChoose);
+    }
+    if (node.onChange) {
+        onChange(node.onChange);
+    }
+    if (node.onSubmit) {
+        onSubmit(node.onSubmit);
+    }
+    return *this;
+}
 } // namespace bul

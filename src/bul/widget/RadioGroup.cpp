@@ -1,10 +1,14 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/RadioGroup.h"
 
 #include <algorithm>
 #include <cmath>
 #include <utility>
 
+#include "bul/Spec.h"
 #include "bul/Theme.h"
+
 #include "bul/widget/TextFlow.h"
 
 namespace bul {
@@ -297,4 +301,25 @@ void RadioGroup::collectFocusables(std::vector<Widget*>& out) {
     }
 }
 
+
+RadioGroup& RadioGroup::apply(spec::RadioGroup const& node) {
+    direction(node.direction);
+    if (node.gap >= 0.f) {
+        gap(node.gap);
+    }
+    for (auto const& option : node.options) {
+        add(option.value, option.text.empty() ? option.value : option.text, option.disabled);
+    }
+    if (!node.value.empty()) {
+        value(node.value);
+    }
+    disabled(node.disabled);
+    readOnly(node.readOnly);
+    invalid(node.invalid);
+    required(node.required);
+    if (node.onValueChange) {
+        onValueChange(node.onValueChange);
+    }
+    return *this;
+}
 } // namespace bul

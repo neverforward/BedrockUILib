@@ -49,7 +49,7 @@ extern bool                             loggedPushResult;
 extern Theme                            theme;
 extern Widget*                          hovered;
 /// Widget that captured the pointer (a drag in progress), or nullptr.
-extern Widget*                          captured;
+extern Widget* captured;
 /// Widget that owns the keyboard, or nullptr. Guarded by `mutex`.
 extern Widget* focused;
 

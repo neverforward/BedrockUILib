@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/ScrollView.h"
 
 #include <algorithm>
@@ -179,4 +181,16 @@ void ScrollView::collectOverlays(std::vector<Widget*>& out) {
     }
 }
 
+
+ScrollView& ScrollView::apply(spec::ScrollView const& node) {
+    viewport(node.viewport);
+    scrollbar(node.scrollbar);
+    wheelStep(node.wheelStep);
+    if (node.content) {
+        if (auto built = node.content->build()) {
+            content(std::move(built));
+        }
+    }
+    return *this;
+}
 } // namespace bul

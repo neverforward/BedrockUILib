@@ -5,6 +5,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct FieldLabel;
+}
+
 namespace bul {
 
 /// The label of a `Field`: one line of text plus two decorations the field can
@@ -33,6 +37,9 @@ public:
     [[nodiscard]] std::string const& text() const noexcept { return mText; }
 
     [[nodiscard]] std::string_view typeName() const noexcept override { return "FieldLabel"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    FieldLabel& apply(spec::FieldLabel const& node);
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               layout(Rect const& outer, Theme const&, Canvas const&) override;

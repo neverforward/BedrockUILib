@@ -11,6 +11,23 @@ input->onChange([](std::string const& value) { /* called on every edit */ });
 field->control(std::move(input));
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.field(
+        "Email",
+        [&] {
+            ui.input("you@example.com", "", [](bul::Input& input) {
+                input.onChange([](std::string const& value) { /* called on every edit */ });
+            });
+        },
+        "Shown under the input."
+    );
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `value(text)` / `value()` | The text. Setting it does not fire `onChange`; user edits do. |

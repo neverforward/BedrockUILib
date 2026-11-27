@@ -29,6 +29,8 @@ struct Common {
     std::function<void()>     onBlur{};
     std::function<void(bool)> onHover{};
     Style                     style{};
+    std::string               className{};
+    std::string               id{};
 };
 
 /// A text run's font: the size is relative to the theme base size, and the colour
@@ -78,6 +80,12 @@ namespace detail {
     if (!common.style.empty()) {
         widget->style(common.style);
     }
+    if (!common.className.empty()) {
+        widget->className(common.className);
+    }
+    if (!common.id.empty()) {
+        widget->id(common.id);
+    }
     return widget;
 }
 
@@ -90,6 +98,14 @@ template <class T>
     // children, so the spec is held through a shared pointer.
     auto held = std::make_shared<T>(std::move(value));
     return std::make_shared<Node>(Node{[held] { return detail::finish(held->buildContent(), held->common); }});
+}
+
+/// A node for a widget the kit does not know: any factory works, so a custom
+/// component joins a struct tree without a dedicated node.
+template <class F>
+    requires std::invocable<F&>
+[[nodiscard]] inline std::shared_ptr<Node> factory(F&& make) {
+    return std::make_shared<Node>(Node{[make] { return make(); }});
 }
 
 /// Builds a whole tree from its root node.
@@ -115,6 +131,8 @@ struct Label {
     bool        wrap{};
     float       wrapWidth{};
     std::size_t maxLines{};
+    float       lineSpacing{};
+    bool        elide{};
     bool        muted{};
 
     [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
@@ -151,6 +169,11 @@ struct Input {
     bool                                    invalid{};
     bool                                    required{};
     std::size_t                             maxLength{};
+    std::string                             filePath{};
+    std::string                             chooseText{};
+    std::string                             emptyFileText{};
+    std::function<bool(std::string const&)> validator{};
+    std::function<void(std::string const&)> onChoose{};
     std::function<void(std::string const&)> onChange{};
     std::function<void(std::string const&)> onSubmit{};
 
@@ -164,6 +187,8 @@ struct Field {
     Common                common{};
     std::string           label{};
     std::string           description{};
+    std::shared_ptr<Node> labelWidget{};
+    std::shared_ptr<Node> descriptionWidget{};
     std::shared_ptr<Node> control{};
     Orientation           orientation{Orientation::Vertical};
     float                 gap{-1.f};
@@ -178,13 +203,30 @@ struct Field {
 struct Stack {
     using Direction = bul::Stack::Direction;
 
-    Common                             common{};
-    Direction                          direction{Direction::Vertical};
-    float                              gap{-1.f};
-    std::vector<std::shared_ptr<Node>> children{};
+    /// One child; stretch > 0 makes it share the room the fixed children leave
+    /// (the "the field takes the rest of the row" case).
+    struct Child {
+        std::shared_ptr<Node> node{};
+        float                 stretch{};
+
+        Child() = default;
+        // Implicit, so a children list still reads as { spec::node(...), ... }.
+        Child(std::shared_ptr<Node> value) : node(std::move(value)) {}
+        Child(std::shared_ptr<Node> value, float factor) : node(std::move(value)), stretch(factor) {}
+    };
+
+    Common             common{};
+    Direction          direction{Direction::Vertical};
+    float              gap{-1.f};
+    std::vector<Child> children{};
 
     [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
 };
+
+/// A stack child with a stretch factor.
+[[nodiscard]] inline Stack::Child weighted(std::shared_ptr<Node> node, float stretch) {
+    return Stack::Child{std::move(node), stretch};
+}
 
 /// A dropdown.
 struct Select {
@@ -200,7 +242,9 @@ struct Select {
     std::vector<Item>                       items{};
     bool                                    disabled{};
     bool                                    required{};
+    bool                                    open{};
     std::function<void(std::string const&)> onValueChange{};
+    std::function<void(bool)>               onOpenChange{};
 
     [[nodiscard]] BUL_API std::unique_ptr<Widget> buildContent() const;
 };
@@ -292,6 +336,7 @@ struct Table {
 struct ScrollView {
     Common                common{};
     float                 viewport{};
+    float                 wheelStep{24.f};
     bool                  scrollbar{true};
     std::shared_ptr<Node> content{};
 

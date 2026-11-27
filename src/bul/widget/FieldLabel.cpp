@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/FieldLabel.h"
 
 #include <algorithm>
@@ -70,4 +72,15 @@ void FieldLabel::paintContent(Canvas& canvas, Theme const& theme) const {
     }
 }
 
+
+FieldLabel& FieldLabel::apply(spec::FieldLabel const& node) {
+    required(node.required);
+    muted(node.muted);
+    if (node.badge) {
+        if (auto built = node.badge->build()) {
+            badge(std::move(built));
+        }
+    }
+    return *this;
+}
 } // namespace bul

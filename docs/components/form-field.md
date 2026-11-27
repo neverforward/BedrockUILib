@@ -25,4 +25,18 @@ field.disabled(true);          // dims label, description and control
 input.disabled(true);          // the same effect for one control, without a field
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.field(
+        "Name",
+        [&] { ui.input("Ada Lovelace"); },
+        "Shown under the input.",
+        [](bul::Field& field) { field.orientation(bul::Field::Orientation::Horizontal); }
+    );
+});
+```
+
+
 are both valid and neither overwrites the other.

@@ -7,6 +7,10 @@
 #include "bul/Layout.h"
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct ScrollView;
+}
+
 namespace bul {
 
 /// A viewport over a taller content widget: the content is laid out at its
@@ -18,6 +22,9 @@ namespace bul {
 class BUL_API ScrollView final : public Widget {
 public:
     [[nodiscard]] std::string_view typeName() const noexcept override { return "ScrollView"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    ScrollView& apply(spec::ScrollView const& node);
 
     /// The single content, usually a `Stack`.
     ScrollView& content(std::unique_ptr<Widget> child);
@@ -62,7 +69,7 @@ public:
 
 private:
     /// The bar lane on the right edge.
-    [[nodiscard]] Rect          barRect() const noexcept;
+    [[nodiscard]] Rect barRect() const noexcept;
     /// The thumb inside that lane.
     [[nodiscard]] layout::Thumb barThumb() const noexcept;
     /// Maps the pointer to an offset while the thumb is dragged.

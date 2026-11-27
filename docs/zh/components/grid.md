@@ -10,6 +10,23 @@ grid->add(std::make_unique<bul::Button>("Two"));
 grid->add(std::make_unique<bul::Button>("Three"));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.grid(
+        3,
+        [&] {
+            ui.button("One", [] {});
+            ui.button("Two", [] {});
+            ui.button("Three", [] {});
+        },
+        [](bul::Grid& grid) { grid.gap(6.f); }
+    );
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `Grid(columns)` / `columns(n)` | 每行的格子数；最后一行可以不满。 |

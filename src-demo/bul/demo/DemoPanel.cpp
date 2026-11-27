@@ -21,6 +21,7 @@
 
 #include "bul/Modal.h"
 #include "bul/Spec.h"
+#include "bul/SpecBuilder.h"
 #include "bul/StyleSheet.h"
 #include "bul/Theme.h"
 #include "bul/Widget.h"
@@ -61,6 +62,16 @@ enum class Page : std::size_t {
 /// forwarded to it. Keeping it in the demo leaves the library free of navigation
 /// policy, and writing it with the public widgets doubles as an example of a
 /// custom container.
+/// A component the kit does not know; it joins builder trees through `ui.add`.
+class Divider final : public Widget {
+public:
+    [[nodiscard]] std::string_view typeName() const noexcept override { return "Divider"; }
+
+    [[nodiscard]] Size measureContent(float, Theme const&, Canvas const&) const override { return {0.f, 1.f}; }
+    void               paintContent(Canvas& canvas, Theme const& theme) const override {
+        canvas.fill(bounds(), theme.panelBorder, 1.f);
+    }
+};
 class Router final : public Widget {
 public:
     Router() = default;
@@ -732,37 +743,23 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
 // --------------------------------------------------------------------- spec page
 
 [[nodiscard]] std::unique_ptr<Widget> specPage(std::function<void()> back) {
-    auto tree = bul::spec::build(
-        bul::spec::Stack{
-            .direction = bul::spec::Stack::Direction::Vertical,
-            .gap       = 8.f,
-            .children  = {
-                          bul::spec::node(
-                    bul::spec::Label{
-                        .text  = "This page is a struct tree.",
-                        .font  = {.size = 1.05f},
-                        .muted = true,
-                    }
-                ), bul::spec::node(
-                    bul::spec::Field{
-                        .label       = "Name",
-                        .description = "Field + Input, built by the spec.",
-                        .control     = bul::spec::node(bul::spec::Input{.placeholder = "Ada Lovelace"}),
-                    }
-                ), bul::spec::node(bul::spec::Switch{.text = "Notifications", .checked = true}),
-                          bul::spec::node(bul::spec::Checkbox{.text = "Accept terms"}),
-                          bul::spec::node(
-                    bul::spec::Button{
-                        .text    = "Built by a spec",
-                        .onClick = [] { log().debug("demo: spec button pressed"); },
-                    }
-                ), },
-    }
-    );
+    auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+        ui.label("This page is a builder tree.", 1.05f, true)
+            .field(
+                "Name",
+                [&] { ui.input("Ada Lovelace"); },
+                "Field + Input, built by the builder."
+            )
+            .toggle("Notifications", true)
+            .checkbox("Accept terms")
+            .add(std::make_unique<Divider>())
+            .button("Built by a builder", [] { log().debug("demo: spec button pressed"); })
+            .button("Button with styles", [] {}, [](bul::Button& btn) { btn.style({.button = Rgba(0x007700)}); });
+    });
 
     auto body = column(8.f);
     body->add(std::move(tree));
-    return page("Spec", "A tree built from structs, not make_unique chains.", std::move(body), back);
+    return page("Spec", "A tree from one builder body, not make_unique chains.", std::move(body), back);
 }
 // --------------------------------------------------------------------- grid page
 

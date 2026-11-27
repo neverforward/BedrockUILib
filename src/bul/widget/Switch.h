@@ -5,6 +5,10 @@
 
 #include "bul/widget/Widget.h"
 
+namespace bul::spec {
+struct Switch;
+}
+
 namespace bul {
 
 /// An on/off switch: a track with a thumb that sits on the left or the right.
@@ -39,6 +43,9 @@ public:
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
     [[nodiscard]] std::string_view typeName() const noexcept override { return "Switch"; }
+
+    /// Applies a spec node; the spec layer calls this so the mapping lives here.
+    Switch& apply(spec::Switch const& node);
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paintContent(Canvas&, Theme const&) const override;

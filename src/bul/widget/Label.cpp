@@ -1,10 +1,14 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Label.h"
 
 #include <algorithm>
 #include <utility>
 #include <vector>
 
+#include "bul/Spec.h"
 #include "bul/Theme.h"
+
 #include "bul/widget/TextFlow.h"
 
 namespace bul {
@@ -279,4 +283,27 @@ void Label::paintContent(Canvas& canvas, Theme const& theme) const {
     }
 }
 
+
+Label& Label::apply(spec::Label const& node) {
+    text(node.text);
+    size(node.font.size);
+    align(node.align);
+    verticalAlign(node.verticalAlign);
+    wrap(node.wrap);
+    if (node.wrapWidth > 0.f) {
+        maxWidth(node.wrapWidth);
+    }
+    if (node.maxLines > 0) {
+        maxLines(node.maxLines);
+    }
+    if (node.lineSpacing > 0.f) {
+        lineSpacing(node.lineSpacing);
+    }
+    elide(node.elide);
+    muted(node.muted);
+    if (node.font.color) {
+        color(*node.font.color);
+    }
+    return *this;
+}
 } // namespace bul

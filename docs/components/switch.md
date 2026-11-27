@@ -9,6 +9,17 @@ switchWidget->onCheckedChange([](bool value) { /* the new state */ });
 field->control(std::move(switchWidget));
 ```
 
+Or with a spec tree
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.toggle("Wi-Fi", false, [](bul::Switch& toggle) {
+        toggle.onCheckedChange([](bool value) { /* the new state */ });
+    });
+});
+```
+
+
 | Member | Meaning |
 | --- | --- |
 | `text(t)` | The inline label drawn right of the track. |

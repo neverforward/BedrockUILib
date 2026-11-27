@@ -9,6 +9,17 @@ box->onCheckedChange([](bool checked) { /* 新状态 */ });
 field->control(std::move(box));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.checkbox("Accept terms", false, [](bul::Checkbox& box) {
+        box.onCheckedChange([](bool checked) { /* 新状态 */ });
+    });
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `text(text)` | 画在方框右侧的内联标签（Base UI 里 `Checkbox` 的外包 label）。字段自己的标签则是分组标题。 |

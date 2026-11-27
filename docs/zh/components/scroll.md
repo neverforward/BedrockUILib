@@ -14,6 +14,22 @@ view->content(std::move(list));
 view->scrollBy(24.f);  // 代码控制滚动
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.scroll(
+        120.f,
+        [&] {
+            for (int i = 1; i <= 20; ++i) {
+                ui.label("Row " + std::to_string(i));
+            }
+        },
+        [](bul::ScrollView& view) { view.scrollBy(24.f); }
+    );
+});
+```
+
 | 成员 | 含义 |
 | --- | --- |
 | `content(child)` | 唯一的内容控件，通常是 `Stack`。 |
@@ -21,6 +37,7 @@ view->scrollBy(24.f);  // 代码控制滚动
 | `scrollbar(bool)` | 在右边缘画滚动条，默认开启。 |
 | `scrollTo(value)` / `scrollBy(delta)` / `offset()` | 代码控制滚动；偏移会被夹到 `content - viewport` 范围内。 |
 | `contentHeight()` / `scrollable()` | 测量出的内容高度，以及是否有内容被挡住。 |
+| `wheelStep(n)` | 滚轮一格的滚动距离，默认 24 单位。 |
 
 显示滚动条时内容会让出这条通道：通道宽 4 单位，内容再留 4 单位间隔，所以文字和控件不会压在滚动条上；不需要滚动时没有通道，内容用满宽度。
 
@@ -28,4 +45,4 @@ view->scrollBy(24.f);  // 代码控制滚动
 
 滚动条可交互：按住滑块拖动就是滚动，点在轨道上会跳到那个位置并继续拖动；按下会捕获指针，所以滚动条下面的内容不会收到这次拖动。
 
-滚轮已经接到宿主输入：先交给指针下的控件，沿容器向上冒泡，`ScrollView` 每格滚动一个 `wheelStep`（默认 24 单位）。用户也可以在自己的输入处理里调 `scrollTo` / `scrollBy`。
+滚轮已经接到宿主输入：先交给指针下的控件，沿容器向上冒泡，`ScrollView` 每格滚动一个 `wheelStep`（默认 24 单位）。消费者也可以在自己的输入处理里调 `scrollTo` / `scrollBy`。

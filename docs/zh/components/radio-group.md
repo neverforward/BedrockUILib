@@ -11,6 +11,25 @@ group->onValueChange([](std::string const& value) { /* 新选择 */ });
 field->control(std::move(group));
 ```
 
+或者使用 Spec 树
+
+```cpp
+auto tree = bul::spec::build([](bul::spec::Builder& ui) {
+    ui.radio(
+        {
+            {.value = "starter", .text = "Starter"},
+            {.value = "pro", .text = "Pro"},
+            {.value = "team", .text = "Team", .disabled = true},
+        },
+        "",
+        [](bul::RadioGroup& group) {
+            group.onValueChange([](std::string const& value) { /* 新选择 */ });
+        }
+    );
+});
+```
+
+
 | 成员 | 含义 |
 | --- | --- |
 | `add(value, text, disabled)` | 一个选项。value 是 `value()` 返回、`onValueChange` 上报的值。 |

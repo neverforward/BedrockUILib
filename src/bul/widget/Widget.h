@@ -122,8 +122,8 @@ public:
     /// Pointer press inside this widget. Returning true captures the pointer: the
     /// following moves arrive as `drag` and the button release as `release`.
     [[nodiscard]] virtual bool press(Point) { return false; }
-    virtual void                 drag(Point) {}
-    virtual void                 release() {}
+    virtual void               drag(Point) {}
+    virtual void               release() {}
     /// Paints with this widget's style applied over the theme it was handed. A
     /// container passes its already-resolved theme down, so a style on a
     /// container colours its whole subtree.

@@ -1,3 +1,5 @@
+#include "bul/Spec.h"
+
 #include "bul/widget/Grid.h"
 
 #include <algorithm>
@@ -102,4 +104,17 @@ void Grid::collectOverlays(std::vector<Widget*>& out) {
     }
 }
 
+
+Grid& Grid::apply(spec::Grid const& node) {
+    columns(node.columns);
+    if (node.gap >= 0.f) {
+        gap(node.gap);
+    }
+    for (auto const& child : node.children) {
+        if (child) {
+            add(child->build());
+        }
+    }
+    return *this;
+}
 } // namespace bul
