@@ -50,8 +50,8 @@ the pointer or keyboard highlight is filled with `Theme::buttonHover`.
 **The popup is an overlay, not a child.** A child would be clipped to the form
 and painted in tree order, so a field below it would draw over it. The widget
 therefore reports the open popup through `collectOverlays` (containers forward
-it), the host paints it after the tree — flushing the tree first, so its panel
-covers the text under it — and gives it the pointer before the tree. This is
+it), the host paints it after the tree (flushing the tree first, so its panel
+covers the text under it), and gives it the pointer before the tree. This is
 also what makes it modal like Base UI's default: `overlayHitTest` claims the
 whole screen, so an outside click closes the popup instead of activating the
 control behind it. Escape and Tab close it first; only then does Escape close

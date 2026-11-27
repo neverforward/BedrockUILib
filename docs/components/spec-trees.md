@@ -1,7 +1,7 @@
 # Spec trees
 
 A tree can be described in one call instead of a chain of `make_unique` calls.
-The recommended form is a builder body — the shape the planned `Screen` API uses:
+The recommended form is a builder body, the shape the planned `Screen` API uses:
 
 ```cpp
 #include "bul/SpecBuilder.h"
@@ -43,8 +43,8 @@ auto tree = bul::spec::Builder{}
                 .className("primary")
                 .build();
 ```
-Every container and leaf also takes a *configure* hook — a lambda over the real
-widget — so anything the typed parameters do not cover is still reachable:
+Every container and leaf also takes a *configure* hook, a lambda over the real
+widget, so anything the typed parameters do not cover is still reachable:
 
 ```cpp
 ui.id("name").input("Ada", "", [](bul::Input& input) {
@@ -109,9 +109,9 @@ bul::spec::Stack{
 Every node carries `common`, the `Widget` base properties: `margin`,
 `fixedWidth` / `fixedHeight`, `minWidth` / `maxWidth`, the `onClick` / `onFocus` /
 `onBlur` / `onHover` handlers, a `style`, a `className` and an `id`. The node
-structs — `Label`, `Button`, `Badge`, `Input`, `Field`, `Stack`, `Select`,
+structs (`Label`, `Button`, `Badge`, `Input`, `Field`, `Stack`, `Select`,
 `Checkbox`, `Switch`, `RadioGroup`, `Grid`, `Table`, `ScrollView`, `FieldLabel`,
-`FieldDescription` — are aggregates, so a designated initializer reads like the
+`FieldDescription`) are aggregates, so a designated initializer reads like the
 object it describes. Children are wrapped with `spec::node(...)`, and
 `spec::build(...)` returns the finished `Widget` tree.
 

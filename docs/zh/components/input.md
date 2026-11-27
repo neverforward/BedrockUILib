@@ -55,7 +55,7 @@ auto tree = bul::spec::build([](bul::spec::Builder& ui) {
 - 点可聚焦控件即获得焦点（`setFocused`），点别处即失去；
 - Tab / Shift+Tab 按视觉顺序在输入框间移动；
 - Backspace、Delete、方向键、Home、End、Ctrl+A 以 `KeyStroke` 形式路由到聚焦控件；
-- **文本框有焦点时宿主声明持有平台键盘**（`KeyboardManager::tryClaimKeyboardOwnership` + `tryEnableKeyboard`）。不声明的话引擎一个打字事件都不发——这一步让输入框可编辑，也让平台 IME 得以驱动；
+- **文本框有焦点时宿主声明持有平台键盘**（`KeyboardManager::tryClaimKeyboardOwnership` + `tryEnableKeyboard`）。不声明的话引擎一个打字事件都不发，这一步让输入框可编辑，也让平台 IME 得以驱动；
 - 敲进来的字符走场景自己的文本入口（`UIScene::handleTextChar`），再路由到聚焦控件；
 - 焦点离开字段和窗口关闭时都会释放键盘，游戏自带的文本框（聊天）不受影响；
 - Ctrl+C / Ctrl+X / Ctrl+V 走系统剪贴板，因为 CJK 输入还依赖引擎的文本服务。

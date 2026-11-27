@@ -4,4 +4,4 @@
 
 - 把本仓库的 `src/` 和 `src-client/` 加进 include 路径；
 - 链接 `BedrockUILib.lib`；
-- 用相同的编译器工具链和 LeviLamina SDK 版本构建——C++ ABI 要跨 dll 边界。
+- 用相同的编译器工具链和 LeviLamina SDK 版本构建，C++ ABI 要跨 dll 边界。

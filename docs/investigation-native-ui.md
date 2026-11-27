@@ -1,8 +1,11 @@
 # Native UI investigation
 
-Status: **audit record + decision**. The maintainer chose the self-draw route on 2026-11-03;
-[architecture.md](architecture.md) carries the consequences. This document keeps the evidence
-for both routes so the decision can be re-examined instead of re-investigated.
+Status: **audit record + decision, plus outcome**. The maintainer chose the
+self-draw route on 2026-11-03, and the route is now implemented as a modal host
+over a placeholder screen. [architecture.md](architecture.md) describes the
+implementation. The evidence below keeps both routes on record so the decision
+can be re-examined instead of re-investigated, and the tables carry an outcome
+note where the implementation diverged from the plan.
 
 Scope: how a client-only LeviLamina mod can create a *native* screen / panel / HUD element on
 this GDK client (Minecraft Bedrock 1.26.51.01 + LeviLamina client), i.e. a UI drawn inside the
@@ -46,12 +49,12 @@ The engine offers exactly one way to get its own controls, and this project does
 
 | Fact | Evidence |
 | --- | --- |
-| Create a screen from a definition name + a controller | `SceneFactory::createUIScene(std::string const& screenName, std::shared_ptr<ScreenController>)` — `...\screens\SceneFactory.h:719-720` |
-| Wrap a `BaseScreen` into a scene | `SceneFactory::_createScreen(std::shared_ptr<BaseScreen>)` — `SceneFactory.h:209` |
-| Push / pop scenes | `ISceneStack::pushScreen(std::shared_ptr<AbstractScene>, bool flush)`, `schedulePopScreen`, `isOnSceneStack(std::string const&)` — `...\screens\interfaces\ISceneStack.h:183-261` |
-| Reach the factory / stack from a mod | `ClientInstance::getSceneFactory()`, `getClientSceneStack()`, `getMainSceneStack()` — `...\mc\client\game\ClientInstance.h:882,888,896`; `ll::service::getClientInstance()` — `docs\ll\src-client\ll\api\service\TargetedBedrock.h:13` |
-| Controller seam (data + input + tick) | `ScreenController::{bind, bindString, bindBool, bindFloat, bind*ForCollection, bind*ForAnyCollection, registerButtonEventHandler, tick, preFrameTick, tryExit, onOpen, onLeave}` — `...\screens\ScreenController.h:391-482`; `MinecraftScreenController(std::shared_ptr<MinecraftScreenModel>, ScreenExitBehavior, bool)` — `...\screens\controllers\MinecraftScreenController.h`; `ScreenExitBehavior` — `...\controllers\ScreenExitBehavior.h` |
-| Write a value into a bound property | `UIPropertyBag::set(std::string_view, mce::Color / glm::vec2 / glm::ivec2)` — `...\controls\UIPropertyBag.h:125-129` |
+| Create a screen from a definition name + a controller | `SceneFactory::createUIScene(std::string const& screenName, std::shared_ptr<ScreenController>)`, `...\screens\SceneFactory.h:719-720` |
+| Wrap a `BaseScreen` into a scene | `SceneFactory::_createScreen(std::shared_ptr<BaseScreen>)`, `SceneFactory.h:209` |
+| Push / pop scenes | `ISceneStack::pushScreen(std::shared_ptr<AbstractScene>, bool flush)`, `schedulePopScreen`, `isOnSceneStack(std::string const&)`, `...\screens\interfaces\ISceneStack.h:183-261` |
+| Reach the factory / stack from a mod | `ClientInstance::getSceneFactory()`, `getClientSceneStack()`, `getMainSceneStack()`, `...\mc\client\game\ClientInstance.h:882,888,896`; `ll::service::getClientInstance()`, `docs\ll\src-client\ll\api\service\TargetedBedrock.h:13` |
+| Controller seam (data + input + tick) | `ScreenController::{bind, bindString, bindBool, bindFloat, bind*ForCollection, bind*ForAnyCollection, registerButtonEventHandler, tick, preFrameTick, tryExit, onOpen, onLeave}`, `...\screens\ScreenController.h:391-482`; `MinecraftScreenController(std::shared_ptr<MinecraftScreenModel>, ScreenExitBehavior, bool)`, `...\screens\controllers\MinecraftScreenController.h`; `ScreenExitBehavior`, `...\controllers\ScreenExitBehavior.h` |
+| Write a value into a bound property | `UIPropertyBag::set(std::string_view, mce::Color / glm::vec2 / glm::ivec2)`, `...\controls\UIPropertyBag.h:125-129` |
 | Engine-side input/focus/scroll: keyboard, mouse, gamepad, Esc, Tab order, focus containers, scroll views all exist as components | `...\controls\{InputComponent,FocusComponent,FocusContainerComponent,ScrollViewComponent,GridComponent,ButtonComponent,ToggleComponent,SliderComponent,TextEditComponent,DropdownComponent,TooltipTriggerComponent}.h` |
 
 ### 3. Mod resource packs are injected by LeviLamina itself
@@ -86,11 +89,11 @@ programmatically (confirming section 1 from a second direction).
 
 | Project | UI mechanism | Evidence |
 | --- | --- | --- |
-| `MiracleForest/BarelyEnoughItems` | custom draw through `MinecraftUIRenderContext` | `src/ui/gfx/Painter.h` — "thin batching wrapper over `MinecraftUIRenderContext`", strict order rects -> `flushImages` -> item icons -> text -> `flushText`; own widgets in `src/ui/widgets/*` |
+| `MiracleForest/BarelyEnoughItems` | custom draw through `MinecraftUIRenderContext` | `src/ui/gfx/Painter.h`, "thin batching wrapper over `MinecraftUIRenderContext`", strict order rects -> `flushImages` -> item icons -> text -> `flushText`; own widgets in `src/ui/widgets/*` |
 | `MiracleForest/Bedstones` | same framework, plus injection into vanilla screens | `src/client/ui/{gfx/Painter, UiRoot, screen/Screens.h, widgets/{Style,Widgets,TextBox,Tooltip}}`, `src/client/input/InputRouter.h`, `src/client/inventorybutton/PanelLocator.h` (finds the vanilla 176x166 `player_inventory` panel rect and puts a button on it) |
 | `MiracleForest/AlleviatedBackpacks` | same framework | `src/client/ui/{gfx/Painter, screen/BackpackScreen, screen/InventoryParts, screen/Tabs, widgets/*}`, `src/client/input/InputRouter.cpp`; client companion receives screen state over packets from its own server side |
 | `amatouhake/Lamium` | same framework + world-space overlay | `src/ui/{Widgets,SettingsScreen,HudEditor,Toast,TextFit,TranslationsZhCN}`, `src/overlay/*`; `tests/` pure + `tests-native/` SDK types (documented in `AGENTS.md`) |
-| `honeymirror/RenderDragonShaderLoader` | neither — RenderDragon shader/material pipeline | only relevant if we ever need to render outside the UI system; not needed for screens/HUD elements |
+| `honeymirror/RenderDragonShaderLoader` | neither, RenderDragon shader/material pipeline | only relevant if we ever need to render outside the UI system; not needed for screens/HUD elements |
 
 The shared client UI framework across the first four (`Painter` + `UiRoot` + `UiLayer` + widgets
 + `InputRouter`) is the de-facto standard here, and it is *all-or-nothing*: because the mod draws
@@ -101,12 +104,11 @@ its own pixels, it also owns
   `ClientInstance::update`),
 * focus / tab order / text-focus key capture,
 * cursor and GUI-scale handling,
-* text input (their own `TextInput`/`TextBox` + clipboard helpers, since IME does not work here —
-  see the project notes on paste-only input).
+* text input (their own `TextInput`/`TextBox` + clipboard helpers, since IME does not work here; see the project notes on paste-only input).
 
-That is the cost that comes with self-drawing. It was initially excluded by the task (engine
+Self-drawing was initially excluded by the task (engine
 should own input/focus/cursor), then accepted by the maintainer's decision on 2026-11-03, and it
-is now the library's central engineering problem — see "Risks of the chosen route". Their code
+is now the library's central engineering problem, see "Risks of the chosen route". Their code
 is still the best available reference for **draw order inside the UI pass**, widget look
 (`Style.h` = vanilla look), layout math and test structure.
 
@@ -122,7 +124,7 @@ is still the best available reference for **draw order inside the UI pass**, wid
 * `GameplayUI::DataDrivenScreenAPI::showDataDrivenScreen(screenId, formId, dataInstanceId)`
   exists client-side (`...\mc\client\gui\gameplay\api\gameplayui\DataDrivenScreenAPI.h:60`),
   and its schema is high-level (`Panel`, `FormButton`, `FormSwitch`, `FormSlider`,
-  `FormDropdown`, `FormTextField`, `FormScrollView`, `ScrollableGridLayout`, ...) — attractive.
+  `FormDropdown`, `FormTextField`, `FormScrollView`, `ScrollableGridLayout`, ...), attractive.
 * But its data path is a datastore instance id normally created by the server
   (`ll::ui::ScreenSession` is server-only: `ll\api\ui\base\ScreenSession.h:20,48-50`), and it
   is a *form* surface (modal dialog), not a general panel/HUD surface. Revisit only as a
@@ -130,30 +132,37 @@ is still the best available reference for **draw order inside the UI pass**, wid
 
 ## Hooks and engine entry points of the chosen route
 
-The JSON UI route needed none. The chosen route needs engine entry points, and the library owns
-them so consumers never hook anything (two dependents hooking the same function is the failure
-mode this rule prevents). Nothing here is implemented yet; step 3 picks and verifies the exact
-input hook.
+The JSON UI route needed none. The library owns the engine entry points, so
+consumers never hook anything (two dependents hooking the same function is the
+failure mode this rule prevents). What the implementation uses:
 
 | Need | Entry point | State |
 | --- | --- | --- |
-| Draw inside the UI pass | `ll::event::BeforeUIRenderEvent` / `AfterUIRenderEvent` (LL event, gives `ScreenView&` + `MinecraftUIRenderContext&`; `docs\ll\src-client\ll\api\event\render\UIRenderEvent.h`) | candidate, no MinHook needed |
-| Key events | `ll::input::KeyRegistry::getOrCreateKey` + `KeyHandle` handlers (`docs\ll\src-client\ll\api\input\KeyHandle.h`) | decided for hotkeys |
-| Pointer / scroll events | not yet chosen: `ClientInputCallbacks::handlePointerLocationWithId` / `MinecraftInputHandler` are the candidates; requires a MinHook or a thunk | step 3 |
-| Per-frame update (input replay, watchdog) | once per frame on the client thread, driven by the same render event or a client update event | step 3 |
-| Cursor | not hooked: draw a software cursor and account for `ShowCursor` calls | step 3 |
+| Draw inside the UI pass | a hook on `UIScene::$render`: our callback replaces the drawing of a placeholder screen (`SceneFactory::createCommonDialogInfoScreen`) | implemented |
+| One pass per frame | the same render hook fires every frame while the placeholder is on top | implemented |
+| Pointer, wheel and buttons | `ll::event::input::MouseInputEvent` listener: buttons are cancelled, moves pass through, the wheel arrives as a Windows delta (120 per notch) | implemented |
+| Keys | `ll::event::input::KeyInputEvent` listener; the host routes Tab, Shift+Tab and Esc | implemented |
+| Typed text | the client input callback behind `UIScene::handleTextChar`, plus a claim on the platform keyboard through `KeyboardManager` | implemented |
+| Cursor | not hooked: the placeholder screen keeps the engine cursor | not needed |
+| Close | `schedulePopScreen(1)` once the placeholder is the top of the stack | implemented |
 
-Rules: install once at enable, remove at disable, and keep the watchdog on a path that runs every
-frame regardless of whether any of our UI is visible.
+Rules: the listeners are installed at enable and removed when the window closes.
+There is no process-wide input hook of our own, so a failed teardown cannot leave
+the mouse broken.
 
 ## API consequences (chosen route)
 
-The control tree is ours, so the API is a C++ widget tree, not a JSON schema and not a resource
-pack: register a screen or a HUD element, add rows/labels/buttons, set a theme, get a per-frame
-callback. Layout solving, hit-testing, focus order, scrolling and text measurement therefore
-live in `src/` as pure logic and are unit-tested; only the drawing, the input source and the
-text measure implementation live in `src-client/`. The planned shape is in
-[architecture.md](architecture.md); it is not implemented yet.
+The control tree is ours, so the API is a C++ widget tree, not a JSON schema and
+not a resource pack. A consumer builds a tree and hands it to `showModal`; the
+library owns the placeholder screen, the render hook, the backdrop, input capture
+and the queue-aware close. The tree can be written by hand, described with
+`bul::spec` nodes, or built with `bul::spec::Builder`, which is the recommended
+form.
+
+Layout solving, hit testing, focus order, scrolling, text measurement and the
+edit model are pure logic in `src/` and unit-tested. Drawing, input and the font
+live in `src-client/`. A name per screen and a HUD registry are still planned;
+see [architecture.md](architecture.md).
 
 ## Risks of the JSON UI option (recorded; not the route taken)
 
@@ -200,7 +209,7 @@ text measure implementation live in `src-client/`. The planned shape is in
 1. **The cursor is ours.** Exclusive fullscreen does not composite the hardware cursor
    (`GetCursorInfo` says showing while nothing is on screen), and the game pushes the
    `ShowCursor` counter negative every frame. A pointer UI must draw a software cursor and
-   account for exactly the `ShowCursor` calls it makes. Insight burned several rounds here.
+   account for exactly the `ShowCursor` calls it makes. Insight burned several rounds here. The implementation does not hit this: the window replaces a placeholder screen, so the engine keeps the cursor.
 2. **Text input cannot be self-made.** This GDK client never produces IME composition
    (`GCS_COMPSTR` empty, `WM_IME_*` absent), so text entry must go through the game's own text
    field or clipboard paste. A text input widget is therefore the most expensive primitive in
@@ -219,22 +228,37 @@ text measure implementation live in `src-client/`. The planned shape is in
    long lists need virtualisation, and layout must be cached, not recomputed per event.
 8. **Hook lifetime.** The input/pointer hook of the library is process-wide: it must be removed
    at disable and guarded by a watchdog on an always-running path, or a failed teardown looks
-   like "the mod broke the mouse" (the exact symptom recorded in the project notes).
+   like "the mod broke the mouse" (the exact symptom recorded in the project notes). The implementation installs LL event listeners only and removes them on close.
 9. **GUI scale and DPI.** All geometry is in GUI units; conversions to and from screen pixels
    must be centralised, or hit tests drift from what is drawn.
 
+### How these risks turned out
+
+- The cursor (1) is not ours after all: the window replaces a placeholder
+  screen, so the engine keeps the cursor and its `ShowCursor` accounting.
+- Focus stealing (3) was never needed.
+- CJK renders through the engine font in game (5).
+- Vanilla fidelity (6) is a theme plus pixel-art drawing. It is on us.
+- Virtualisation (7) is still open: `ScrollView` paints every child and clips
+  the result.
+- The input hook (8) is a pair of LL event listeners, removed on close.
+- GUI scale and DPI (9) are handled in `Painter`, in one place.
+
 ## Minimal runnable verification (the feasibility gate for step 3)
 
-1. Draw a panel inside the UI pass through `MinecraftUIRenderContext`: header, two labels, two
-   buttons, one Chinese string.
-2. Accept only if, in game:
-   * the panel follows the GUI-scale setting (`Video -> GUI Scale` change moves and resizes it),
-   * the pointer appears exactly once when the panel opens and disappears when it closes, with
-     the world usable again immediately afterwards,
-   * hover highlights the control under the cursor, click activates it, and a click outside the
-     panel does not reach the world,
-   * keyboard focus moves with Tab between the two buttons and Esc closes the panel,
-   * the Chinese string renders as glyphs, not boxes, at the same size as vanilla text,
-   * no per-frame log spam and no measurable frame time increase while the panel is open.
-3. One negative check: disable the mod while the panel is open — no leftover cursor state, no
-   leftover hook.
+This list was written before the implementation. The demo now covers it.
+
+1. The panel draws inside the UI pass through `MinecraftUIRenderContext`: a
+   header, a caption, buttons and rows of text, one of them Chinese.
+2. Checked in game on this client:
+   * the window follows the GUI scale;
+   * the engine cursor shows while the window is open, and input returns to the
+     game when it closes;
+   * hover and click work, a click outside the window does not reach the world,
+     and the wheel scrolls a list;
+   * Tab moves focus, Esc closes the window, typed text lands in the focused
+     field, and the Chinese string renders as glyphs;
+   * the scrollbar drags.
+3. Not measured: frame time with the window open, and the state after disabling
+   the mod while the window is open. The host installs a few LL event listeners
+   and removes them on close, so there is no process-wide input hook to leak.

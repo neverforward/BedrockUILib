@@ -1,6 +1,6 @@
 # Spec 树
 
-除了链式 `make_unique`，也可以一次调用描述整棵树。**推荐用 builder** —— 也是计划中的 `Screen` API 的形态：
+除了链式 `make_unique`，也可以一次调用描述整棵树。**推荐用 builder**，也是计划中的 `Screen` API 的形态：
 
 ```cpp
 #include "bul/SpecBuilder.h"
@@ -41,7 +41,7 @@ auto tree = bul::spec::Builder{}
                 .className("primary")
                 .build();
 `
-每个容器和叶子还接受一个 *configure* 钩子 —— 一个拿到真实控件的 lambda —— 所以类型参数没覆盖到的部分也能设：
+每个容器和叶子还接受一个 *configure* 钩子，一个拿到真实控件的 lambda，所以类型参数没覆盖到的部分也能设：
 
 ```cpp
 ui.id("name").input("Ada", "", [](bul::Input& input) {
@@ -99,7 +99,7 @@ bul::spec::Stack{
 
 `Common` 也带 `className` 和 `id`，所以节点可以像普通控件一样被[样式表选择器](/zh/components/stylesheets)选中。
 
-每个节点都带 `common`，即 `Widget` 基类属性：`margin`、`fixedWidth` / `fixedHeight`、`minWidth` / `maxWidth`、`onClick` / `onFocus` / `onBlur` / `onHover` 回调、`style`、`className` 和 `id`。节点结构体 —— `Label`、`Button`、`Badge`、`Input`、`Field`、`Stack`、`Select`、`Checkbox`、`Switch`、`RadioGroup`、`Grid`、`Table`、`ScrollView`、`FieldLabel`、`FieldDescription` —— 都是聚合体，指定初始化写起来就像它描述的对象本身。子节点用 `spec::node(...)` 包一层，`spec::build(...)` 返回构建好的 `Widget` 树。
+每个节点都带 `common`，即 `Widget` 基类属性：`margin`、`fixedWidth` / `fixedHeight`、`minWidth` / `maxWidth`、`onClick` / `onFocus` / `onBlur` / `onHover` 回调、`style`、`className` 和 `id`。节点结构体（`Label`、`Button`、`Badge`、`Input`、`Field`、`Stack`、`Select`、`Checkbox`、`Switch`、`RadioGroup`、`Grid`、`Table`、`ScrollView`、`FieldLabel`、`FieldDescription`）都是聚合体，指定初始化写起来就像它描述的对象本身。子节点用 `spec::node(...)` 包一层，`spec::build(...)` 返回构建好的 `Widget` 树。
 
 每个节点由控件自己应用：每个组件都有 `apply(spec::X const& node)` 设置自己的参数，`spec::buildContent()` 只是"构造控件 + 调用 apply"的桥。字段到 setter 的映射因此跟着控件走，而不是集中在某一个文件里。
 

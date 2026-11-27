@@ -1,6 +1,6 @@
 # Switch
 
-An on/off switch, The track colour carries the state, like the checkbox.
+An on/off switch. The track colour carries the state, like the checkbox.
 
 ```cpp
 auto switchWidget = std::make_unique<bul::Switch>();
@@ -9,7 +9,7 @@ switchWidget->onCheckedChange([](bool value) { /* the new state */ });
 field->control(std::move(switchWidget));
 ```
 
-Or with a spec tree
+Or with a spec tree (the same switch):
 
 ```cpp
 auto tree = bul::spec::build([](bul::spec::Builder& ui) {
@@ -18,7 +18,6 @@ auto tree = bul::spec::build([](bul::spec::Builder& ui) {
     });
 });
 ```
-
 
 | Member | Meaning |
 | --- | --- |
@@ -31,5 +30,5 @@ auto tree = bul::spec::build([](bul::spec::Builder& ui) {
 The track is 22 x 12 units and the thumb is a 10-unit pixel circle: it sits on
 the left on the raised surface (`Theme::button`) and on the right on
 `Theme::accent` once the switch is on. Space toggles while the switch has focus;
-a click anywhere — track or label — flips it. Invalid tints the off track red
+a click anywhere (track or label) flips it. Invalid tints the off track red
 and paints the on track in `Theme::invalid` itself.

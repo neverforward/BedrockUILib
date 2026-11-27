@@ -28,4 +28,4 @@ auto tree = bul::spec::build([](bul::spec::Builder& ui) {
 | `readOnly(true)` | 可以聚焦，但状态不能变。 |
 | `disabled(true)` / `required(true)` / `invalid(true)` | 常规控件状态；field 也能施加。 |
 
-轨道 22 x 12 单位，滑块是 10 单位的像素圆：关的时候停在左侧表面色（`Theme::button`）上，开的时候停在右侧 `Theme::accent` 上。有焦点时空格切换；点在任意位置——轨道或标签——都翻转。invalid 给关态轨道加红色调，开态轨道直接用 `Theme::invalid`。
+轨道 22 x 12 单位，滑块是 10 单位的像素圆：关的时候停在左侧表面色（`Theme::button`）上，开的时候停在右侧 `Theme::accent` 上。有焦点时空格切换；点在任意位置，轨道或标签，都翻转。invalid 给关态轨道加红色调，开态轨道直接用 `Theme::invalid`。

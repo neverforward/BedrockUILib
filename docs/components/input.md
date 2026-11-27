@@ -67,8 +67,8 @@ Focus, the caret and the clipboard belong to the host, not to the widget:
   focused widget as `KeyStroke`s;
 - **the host claims the platform keyboard while a text field has focus**
   (`KeyboardManager::tryClaimKeyboardOwnership` + `tryEnableKeyboard`). Without
-  that claim the engine sends no typed text at all — this is what makes an input
-  editable, and it is also what lets the platform drive the IME;
+  that claim the engine sends no typed text at all. The claim is what makes an input
+  editable, and it also lets the platform drive the IME;
 - typed characters then arrive through the scene's own text entry point
   (`UIScene::handleTextChar`) and are routed to the focused widget;
 - the keyboard is released when focus leaves the field and when the window

@@ -41,7 +41,7 @@ auto tree = bul::spec::build([](bul::spec::Builder& ui) {
 | `readOnly(true)` | Options stay focusable, but the choice cannot change. |
 | `invalid(true)` / `required(true)` | The field can impose both. An invalid group with no choice tints every disc; once something is chosen only that disc is red. |
 
-The disc is an 11-unit pixel circle drawn as row spans — the same colour-only
+The disc is an 11-unit pixel circle drawn as row spans, the same colour-only
 rule as the checkbox (surface while unchosen, accent when chosen, no border).
 Clicking an option chooses it; Space chooses the focused option; Up/Down and
 Left/Right move the choice, skipping disabled options; Tab walks the options.

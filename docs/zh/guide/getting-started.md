@@ -1,7 +1,7 @@
 # 快速开始
 
 BedrockUILib 是 [LeviLamina](https://github.com/LiteLDev/LeviLamina) 的客户端库。
-其它客户端模组用它把界面、面板和 HUD 元素画在游戏自己的 UI 栈上——就是游戏用来
+其它客户端模组用它把界面、面板和 HUD 元素画在游戏自己的 UI 栈上，就是游戏用来
 画信息框和设置面板的那套栈。它不是覆盖层窗口：所有内容都在游戏 UI pass 里绘制，
 所以会跟随界面缩放，并和其余 UI 一起排序。
 

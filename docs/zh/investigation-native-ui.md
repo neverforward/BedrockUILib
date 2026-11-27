@@ -1,8 +1,8 @@
 # 原生 UI 调研
 
-状态：**审计记录 + 决策**。维护者于 2026-11-03 选择自绘路线；其后果写在
-[architecture.md](architecture.md) 里。本文保留两条路线的证据，这样这个决定可以被重新
-审视，而不必重新调研。
+状态：**审计记录 + 决策 + 结果**。维护者于 2026-11-03 选择自绘路线，现在这条路线已经实现为
+基于占位界面的模态宿主，实现细节见 [architecture.md](architecture.md)。本文保留两条路线的
+证据，让这个决定可以被重新审视而不必重新调研；与计划有出入的地方，在表里注了结果。
 
 范围：一个纯客户端 LeviLamina 模组，如何在这个 GDK 客户端（Minecraft Bedrock 1.26.51.01
 + LeviLamina client）上创建一个*原生*界面 / 面板 / HUD 元素，也就是画在游戏自己的 UI pass
@@ -43,12 +43,12 @@
 
 | 事实 | 证据 |
 | --- | --- |
-| 用定义名 + controller 创建界面 | `SceneFactory::createUIScene(std::string const& screenName, std::shared_ptr<ScreenController>)` — `...\screens\SceneFactory.h:719-720` |
-| 把 `BaseScreen` 包装成场景 | `SceneFactory::_createScreen(std::shared_ptr<BaseScreen>)` — `SceneFactory.h:209` |
-| 压入 / 弹出场景 | `ISceneStack::pushScreen(std::shared_ptr<AbstractScene>, bool flush)`、`schedulePopScreen`、`isOnSceneStack(std::string const&)` — `...\screens\interfaces\ISceneStack.h:183-261` |
-| 从模组拿到工厂 / 场景栈 | `ClientInstance::getSceneFactory()`、`getClientSceneStack()`、`getMainSceneStack()` — `...\mc\client\game\ClientInstance.h:882,888,896`；`ll::service::getClientInstance()` — `docs\ll\src-client\ll\api\service\TargetedBedrock.h:13` |
-| controller 接缝（数据 + 输入 + tick） | `ScreenController::{bind, bindString, bindBool, bindFloat, bind*ForCollection, bind*ForAnyCollection, registerButtonEventHandler, tick, preFrameTick, tryExit, onOpen, onLeave}` — `...\screens\ScreenController.h:391-482`；`MinecraftScreenController(std::shared_ptr<MinecraftScreenModel>, ScreenExitBehavior, bool)` — `...\screens\controllers\MinecraftScreenController.h`；`ScreenExitBehavior` — `...\controllers\ScreenExitBehavior.h` |
-| 往绑定属性写值 | `UIPropertyBag::set(std::string_view, mce::Color / glm::vec2 / glm::ivec2)` — `...\controls\UIPropertyBag.h:125-129` |
+| 用定义名 + controller 创建界面 | `SceneFactory::createUIScene(std::string const& screenName, std::shared_ptr<ScreenController>)`, `...\screens\SceneFactory.h:719-720` |
+| 把 `BaseScreen` 包装成场景 | `SceneFactory::_createScreen(std::shared_ptr<BaseScreen>)`, `SceneFactory.h:209` |
+| 压入 / 弹出场景 | `ISceneStack::pushScreen(std::shared_ptr<AbstractScene>, bool flush)`、`schedulePopScreen`、`isOnSceneStack(std::string const&)`, `...\screens\interfaces\ISceneStack.h:183-261` |
+| 从模组拿到工厂 / 场景栈 | `ClientInstance::getSceneFactory()`、`getClientSceneStack()`、`getMainSceneStack()`, `...\mc\client\game\ClientInstance.h:882,888,896`；`ll::service::getClientInstance()`, `docs\ll\src-client\ll\api\service\TargetedBedrock.h:13` |
+| controller 接缝（数据 + 输入 + tick） | `ScreenController::{bind, bindString, bindBool, bindFloat, bind*ForCollection, bind*ForAnyCollection, registerButtonEventHandler, tick, preFrameTick, tryExit, onOpen, onLeave}`, `...\screens\ScreenController.h:391-482`；`MinecraftScreenController(std::shared_ptr<MinecraftScreenModel>, ScreenExitBehavior, bool)`, `...\screens\controllers\MinecraftScreenController.h`；`ScreenExitBehavior`, `...\controllers\ScreenExitBehavior.h` |
+| 往绑定属性写值 | `UIPropertyBag::set(std::string_view, mce::Color / glm::vec2 / glm::ivec2)`, `...\controls\UIPropertyBag.h:125-129` |
 | 引擎侧的输入/焦点/滚动：键盘、鼠标、手柄、Esc、Tab 顺序、焦点容器、滚动视图都作为组件存在 | `...\controls\{InputComponent,FocusComponent,FocusContainerComponent,ScrollViewComponent,GridComponent,ButtonComponent,ToggleComponent,SliderComponent,TextEditComponent,DropdownComponent,TooltipTriggerComponent}.h` |
 
 ### 3. 模组资源包由 LeviLamina 自己注入
@@ -83,11 +83,11 @@ Advancements 的包也是目前最好的 JSON UI 踩坑笔记（`advancements_sc
 
 | 项目 | UI 机制 | 证据 |
 | --- | --- | --- |
-| `MiracleForest/BarelyEnoughItems` | 通过 `MinecraftUIRenderContext` 自绘 | `src/ui/gfx/Painter.h` —— "thin batching wrapper over `MinecraftUIRenderContext`"，严格顺序 rects -> `flushImages` -> item icons -> text -> `flushText`；控件在 `src/ui/widgets/*` |
+| `MiracleForest/BarelyEnoughItems` | 通过 `MinecraftUIRenderContext` 自绘 | `src/ui/gfx/Painter.h`，"thin batching wrapper over `MinecraftUIRenderContext`"，严格顺序 rects -> `flushImages` -> item icons -> text -> `flushText`；控件在 `src/ui/widgets/*` |
 | `MiracleForest/Bedstones` | 同一套框架，外加注入原版界面 | `src/client/ui/{gfx/Painter, UiRoot, screen/Screens.h, widgets/{Style,Widgets,TextBox,Tooltip}}`、`src/client/input/InputRouter.h`、`src/client/inventorybutton/PanelLocator.h`（找到原版 176x166 的 `player_inventory` 面板矩形并在上面放一个按钮） |
 | `MiracleForest/AlleviatedBackpacks` | 同一套框架 | `src/client/ui/{gfx/Painter, screen/BackpackScreen, screen/InventoryParts, screen/Tabs, widgets/*}`、`src/client/input/InputRouter.cpp`；客户端伴侣通过自己服务端发来的包接收界面状态 |
 | `amatouhake/Lamium` | 同一套框架 + 世界空间覆盖层 | `src/ui/{Widgets,SettingsScreen,HudEditor,Toast,TextFit,TranslationsZhCN}`、`src/overlay/*`；`tests/` 纯逻辑 + `tests-native/` SDK 类型（记录在 `AGENTS.md`） |
-| `honeymirror/RenderDragonShaderLoader` | 都不是 —— RenderDragon 着色器/材质管线 | 只有在我们需要在 UI 系统之外渲染时才相关；界面/HUD 用不到 |
+| `honeymirror/RenderDragonShaderLoader` | 都不是，RenderDragon 着色器/材质管线 | 只有在我们需要在 UI 系统之外渲染时才相关；界面/HUD 用不到 |
 
 前四个项目共用的客户端 UI 框架（`Painter` + `UiRoot` + `UiLayer` + 控件 + `InputRouter`）
 在这里是事实标准，而且是*全有或全无*的：模组既然自己画像素，就也得自己负责
@@ -96,11 +96,11 @@ Advancements 的包也是目前最好的 JSON UI 踩坑笔记（`advancements_sc
   线程从 `ClientInstance::update` 重放），
 * 焦点 / Tab 顺序 / 文本焦点按键捕获，
 * 光标与 GUI 缩放处理，
-* 文本输入（它们自己的 `TextInput`/`TextBox` + 剪贴板辅助，因为这里 IME 不工作 —— 见项目
+* 文本输入（它们自己的 `TextInput`/`TextBox` + 剪贴板辅助，因为这里 IME 不工作，见项目
   笔记里"只能粘贴"的说明）。
 
-这就是自绘的代价。它一开始被任务排除（引擎应当拥有输入/焦点/光标），后来在 2026-11-03 被
-维护者接受，现在是这个库最核心的工程问题 —— 见"所选路线的风险"。它们的代码仍是目前最好的
+自绘一开始被任务排除（引擎应当拥有输入/焦点/光标），后来在 2026-11-03 被
+维护者接受，现在是这个库最核心的工程问题，见"所选路线的风险"。它们的代码仍是目前最好的
 参考：**UI pass 内的绘制顺序**、控件外观（`Style.h` = 原版外观）、布局数学和测试结构。
 
 | 借鉴（与机制无关） | 不采用 |
@@ -115,34 +115,32 @@ Advancements 的包也是目前最好的 JSON UI 踩坑笔记（`advancements_sc
 * `GameplayUI::DataDrivenScreenAPI::showDataDrivenScreen(screenId, formId, dataInstanceId)`
   在客户端存在（`...\mc\client\gui\gameplay\api\gameplayui\DataDrivenScreenAPI.h:60`），
   schema 层级很高（`Panel`、`FormButton`、`FormSwitch`、`FormSlider`、`FormDropdown`、
-  `FormTextField`、`FormScrollView`、`ScrollableGridLayout`……）—— 很有吸引力。
+  `FormTextField`、`FormScrollView`、`ScrollableGridLayout`……）， 很有吸引力。
 * 但它的数据路径是一个通常由服务端创建的 datastore 实例 id
   （`ll::ui::ScreenSession` 仅服务端：`ll\api\ui\base\ScreenSession.h:20,48-50`），而且它是
   *表单*界面（模态对话框），不是通用的面板/HUD 表面。以后最多作为表单的便利层再考虑。
 
 ## 所选路线的钩子与引擎入口
 
-JSON UI 路线一个都不需要。所选路线需要引擎入口，并且由库来拥有它们，这样消费者不用自己
-hook（两个依赖方 hook 同一个函数，正是这条规则要避免的故障）。这里的东西都还没实现；
-第 3 步会选定并验证确切的输入 hook。
+JSON UI 路线一个都不需要。入口由库自己掌握，消费者不用 hook 任何东西（两个依赖方 hook 同一个函数，正是这条规则要避免的故障）。实现实际用的是：
 
 | 需求 | 入口 | 状态 |
 | --- | --- | --- |
-| 在 UI pass 内绘制 | `ll::event::BeforeUIRenderEvent` / `AfterUIRenderEvent`（LL 事件，给出 `ScreenView&` + `MinecraftUIRenderContext&`；`docs\ll\src-client\ll\api\event\render\UIRenderEvent.h`） | 候选，不需要 MinHook |
-| 按键事件 | `ll::input::KeyRegistry::getOrCreateKey` + `KeyHandle` 回调（`docs\ll\src-client\ll\api\input\KeyHandle.h`） | 热键已定 |
-| 指针 / 滚轮事件 | 尚未选定：`ClientInputCallbacks::handlePointerLocationWithId` / `MinecraftInputHandler` 是候选；需要 MinHook 或 thunk | 第 3 步 |
-| 每帧更新（输入重放、看门狗） | 客户端线程每帧一次，由同一个渲染事件或客户端 update 事件驱动 | 第 3 步 |
-| 光标 | 不 hook：画软件光标，并处理 `ShowCursor` 调用 | 第 3 步 |
+| 在 UI pass 内绘制 | `UIScene::$render` 上的钩子：我们的回调替换占位界面（`SceneFactory::createCommonDialogInfoScreen`）的绘制 | 已实现 |
+| 每帧一次 | 占位界面在栈顶时，同一个渲染钩子每帧都会触发 | 已实现 |
+| 指针、滚轮、按键 | `ll::event::input::MouseInputEvent` 监听：鼠标按键事件被取消，移动放行，滚轮是 Windows 增量（一格 120） | 已实现 |
+| 键盘 | `ll::event::input::KeyInputEvent` 监听；Tab、Shift+Tab、Esc 由宿主路由 | 已实现 |
+| 文本输入 | `UIScene::handleTextChar` 背后的客户端输入回调，加上通过 `KeyboardManager` 声明持有平台键盘 | 已实现 |
+| 光标 | 不 hook：占位界面保留引擎自己的光标 | 不需要 |
+| 关闭 | 占位界面成为栈顶后 `schedulePopScreen(1)` | 已实现 |
 
-规则：在 enable 时装一次，disable 时移除，并让看门狗跑在每帧都会执行的路径上，无论我们的 UI
-是否可见。
+规则：监听在启用时安装，窗口关闭时移除。我们没有进程级的输入 hook，所以拆卸失败不会留下"模组把鼠标搞坏"的症状。
 
 ## API 后果（所选路线）
 
-控件树是我们的，所以 API 是 C++ 控件树，不是 JSON schema，也不是资源包：注册一个界面或 HUD
-元素、加行/标签/按钮、设主题、拿每帧回调。因此布局求解、命中测试、焦点顺序、滚动和文本测量
-都放在 `src/` 里作为纯逻辑并做单测；只有绘制、输入源和文本测量实现放在 `src-client/`。
-计划中的形态见 [architecture.md](architecture.md)；尚未实现。
+控件树是我们的，所以 API 是 C++ 控件树，不是 JSON schema，也不是资源包。消费者构建一棵树交给 `showModal`，库负责占位界面、渲染钩子、背景、输入捕获和队列感知的关闭。树可以手写，可以用 `bul::spec` 节点描述，也可以用 `bul::spec::Builder` 构建，后者是推荐写法。
+
+布局求解、命中测试、焦点顺序、滚动、文本测量和编辑模型都是 `src/` 里的纯逻辑，有单测。绘制、输入和字体在 `src-client/`。给界面一个名字、以及 HUD 注册表，仍未实现，见 [architecture.md](architecture.md)。
 
 ## JSON UI 路线的风险（记录，不采用）
 
@@ -180,7 +178,7 @@ hook（两个依赖方 hook 同一个函数，正是这条规则要避免的故�
 
 1. **光标归我们管。** 独占全屏不会合成硬件光标（`GetCursorInfo` 说在显示，但屏幕上什么
    都没有），而且游戏每帧把 `ShowCursor` 计数往负里推。指针 UI 必须画软件光标，并精确地
-   处理自己发出的每一次 `ShowCursor`。Insight 在这里烧掉了好几轮。
+   处理自己发出的每一次 `ShowCursor`。Insight 在这里烧掉了好几轮。实现里没有这个问题：窗口替换的是占位界面，引擎保留自己的光标。
 2. **文本输入无法自造。** 这个 GDK 客户端从不产生 IME 组合（`GCS_COMPSTR` 为空，
    `WM_IME_*` 不存在），所以文本录入必须走游戏自己的文本框或剪贴板粘贴。文本框因此是这套
    控件里最贵的原语。
@@ -197,19 +195,29 @@ hook（两个依赖方 hook 同一个函数，正是这条规则要避免的故�
    不能每个事件都重算。
 8. **hook 生命周期。** 库的输入/指针 hook 是进程级的：必须在 disable 时移除，并由一条
    始终运行的路径上的看门狗保护，否则拆卸失败看起来就是"模组把鼠标搞坏了"（项目笔记里
-   记录的症状）。
+   记录的症状）。实现只安装 LL 事件监听，并在关闭时移除。
 9. **GUI 缩放和 DPI。** 所有几何都在 GUI 单位里；与屏幕像素的互转必须集中处理，否则命中
    测试会和画出来的东西错位。
 
+### 这些风险的结果
+
+- 光标（1）最后不归我们管：窗口替换的是占位界面，引擎保留自己的光标和 `ShowCursor` 计数。
+- 抢焦点（3）完全没用上。
+- 引擎字体渲染中文（5）已在游戏里验证。
+- 原版还原度（6）是一套主题加像素画，仍然归我们。
+- 虚拟化（7）还没做：`ScrollView` 画出所有子控件再裁剪。
+- 输入 hook（8）是一对 LL 事件监听，关闭时移除。
+- GUI 缩放与 DPI（9）集中在 `Painter` 里处理。
+
 ## 最小可运行验证（第 3 步的可行性闸门）
 
-1. 通过 `MinecraftUIRenderContext` 在 UI pass 里画一个面板：标题、两个标签、两个按钮、
-   一段中文。
-2. 只有在游戏里满足以下条件才接受：
-   * 面板跟随 GUI 缩放设置（改 `视频 -> GUI 缩放` 时它跟着移动和缩放），
-   * 面板打开时光标只出现一次、关闭时消失，之后世界立刻可以正常操作，
-   * hover 高亮光标下的控件、点击能激活它，点击面板外不会传到世界，
-   * 键盘焦点用 Tab 在两个按钮之间移动，Esc 关闭面板，
-   * 中文渲染成字形而不是方块，且与原版文本同样大小，
-   * 面板打开时没有每帧日志刷屏，也没有可测量的帧时间上升。
-3. 一项负向检查：面板打开时禁用模组 —— 没有残留的光标状态，没有残留的 hook。
+这份清单写于实现之前，现在 demo 已经覆盖。
+
+1. 通过 `MinecraftUIRenderContext` 在 UI pass 里画面板：标题、说明、按钮和几行文字，其中一行中文。
+2. 在这个客户端上已核对：
+   * 窗口跟随 GUI 缩放；
+   * 窗口打开时显示引擎光标，关闭后输入立刻交还游戏；
+   * hover 和点击正常，点击窗口外不会传到世界，滚轮能滚动列表；
+   * Tab 移动焦点，Esc 关闭窗口，输入框能收到键入文字，中文渲染成字形；
+   * 滚动条可以拖动。
+3. 未测量：窗口打开时的帧时间，以及窗口打开时禁用模组后的状态。宿主只安装几个 LL 事件监听并在关闭时移除，没有进程级输入 hook 可泄漏。

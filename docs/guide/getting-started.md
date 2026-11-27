@@ -2,7 +2,7 @@
 
 BedrockUILib is a client-only library for [LeviLamina](https://github.com/LiteLDev/LeviLamina).
 Other client mods use it to build screens, panels and HUD elements on the game's
-own UI stack — the same stack the game uses for its info boxes and settings
+own UI stack, the same stack the game uses for its info boxes and settings
 panels. It is not an overlay window: everything renders inside the game's UI
 pass, so it follows the interface scale and sorts with the rest of the UI.
 
