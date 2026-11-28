@@ -10,7 +10,74 @@ under `### Changed`.
 
 ## [Unreleased]
 
+### Changed
+
+- `Style` now holds style properties only. The palette tokens (`primary`,
+  `button`, `input`, `accent`, `invalid`, `textMuted`, ...) left it and live on
+  the `Theme` again; `color`, `backgroundColor`, `borderColor` and
+  `accentColor` are the way to reach them from a widget or a rule.
+- `backgroundHover` and `mutedColor` are gone: a hover colour is written as a
+  `:hover` rule (`{"Button:hover", {.backgroundColor = ...}}`), and muted text
+  is the theme's `textMuted` or a `color` rule on the component that draws it.
+- `Style::text` is now `Style::color`; `Style::panel` and `Style::panelBorder`
+  are now `Style::backgroundColor` and `Style::borderColor` (source-breaking).
+- `Theme::padding` is now `std::optional<Insets>` and means container padding,
+  none by default; the modal window frame padding moved to
+  `Theme::windowPadding`.
+- `Widget::measure` resolves the widget's style before measuring, so a styled
+  padding, font size, margin or size takes part in layout.
+
 ### Added
+
+- A style layer on `Style`: `color`, `backgroundColor`, `borderColor`,
+  `borderWidth`, `padding`, `gap`, `fontSize`, plus the box and text set:
+  `margin`, `width` / `height`, `min-*` / `max-*`, `text-align` and
+  `line-height`. `Stack` and `Grid` honour `padding` and `gap`; `Button`,
+  `Input`, `Badge` and `Select` honour the surface, border and text properties;
+  `Label` honours `text-align` and `line-height`; every widget honours `margin`
+  and the size properties, and size-affecting properties change the measured
+  size too.
+- A fluent selector API for rules: `.type("Label")`, `.type<bul::Label>()`,
+  `.className(...)`, `.id(...)`, `.any()`, the combinators `.child()`,
+  `.adjacent()` and `.sibling()`, attribute selectors with every operator,
+  pseudo classes through one `pseudo(name, argument)` call, and `set(Style)` to
+  finish. `Widget::attr(...)` adds attributes (with `type`, `class` and `id`
+  answered automatically); widgets now know their parent and children, so
+  descendant, child and sibling selectors and the structural pseudo classes can
+  match.
+- `Selector::parse` / `parseList` read the same selectors as style text, including
+  comma-separated lists.
+- `Length` with the units `px`, `em`, `ex`, `%`, `cm`, `mm`, `in`, `pt` and
+  `pc`, and the matching literals (`14_px`, `1.5_em`, `2_ex`, `50_pct`, `1_in`,
+  `12_pt`, ...). `Style::fontSize`, `gap` and `borderWidth` take a `Length`,
+  `Padding` gives `padding` one length per side, and the relative units resolve
+  against the new `Theme::fontSize` (9 GUI units).
+- Text and box properties: `visibility` (hidden keeps the space),
+  `text-transform` (uppercase / lowercase / capitalize), `white-space` (wrap or
+  not), `vertical-align` and `text-align` / `line-height` on text blocks.
+- `display: none` drops a widget from the layout (`Stack` and `Grid` skip it
+  entirely), `opacity` paints the subtree through an alpha-multiplying canvas,
+  `border-radius` rounds surfaces and borders by drawing the corners row by row,
+  and `letter-spacing` widens and spreads the glyph positions.
+- The demo gallery's Style page holds it all: theme presets, inline styles and a
+  stylesheet written with the fluent selectors, showing the box, text and state
+  properties on real components, with Apply / Clear rules.
+- Text styling through the game's own format codes: `font-weight: bold` draws the
+  run as `§l...§r`, `font-style: italic` as `§o...§r`, and the new `obfuscated`
+  property as `§k...§r`. A `FormatCanvas` wraps every string a styled widget or
+  container paints, so components do not carry the codes.
+- 31 tests for selectors, attributes, pseudo classes, lengths and the style
+  properties (245 total).
+
+### Fixed
+
+- A rounded border no longer sticks half a pixel outside the straight sides: the
+  corner arcs are sampled on a centre line of `radius - borderWidth / 2`.
+- A bordered surface insets its fill by the border width, so the background no
+  longer shows around the stroke at rounded corners.
+- `Stack` and `Grid` paint their own `background-color`, border and radius when a
+  style sets them, so a styled container looks like a box instead of being
+  invisible.
 
 - xmake project skeleton (clang-cl, `--tests=y` gtest target), i18n files,
   client-only `tooth.json`, version header generated from `BUL_VERSION`.
@@ -37,7 +104,7 @@ under `### Changed`.
 - Spec nodes for every widget: `Grid`, `Table`, `FieldLabel` and `FieldDescription` join the existing `Label` / `Button` / `Badge` / `Input` / `Field` / `Stack` / `Select` / `Checkbox` / `Switch` / `RadioGroup`.
 - `ScrollView`: a viewport over a taller content widget -- a `viewport(n)` height, programmatic `scrollTo` / `scrollBy` and wheel scrolling through the widget tree, and a draggable scrollbar (a press captures the pointer), a scrollbar solved by `layout::scrollThumb` and a `Canvas::pushClip` around the content (the game canvas maps it to the engine's clipping rectangle).
 - `bul/Layout.h`: the layout solver -- `box` (row/column with grow, gap, padding and cross-axis align), `grid`, `table` (fixed and flexible tracks), `clampScroll` / `isVisible` / `scrollThumb` and the extent helpers; `Stack` now lays out through it.
-- `StyleSheet`: CSS-like rules (`type` / `className` / `id` selectors, specificity) that colour whole components over the theme; an inline `Style` still wins.
+- `StyleSheet`: style rules (`type` / `className` / `id` selectors, specificity) that colour whole components over the theme; an inline `Style` still wins.
 - `Style`: per-widget colour overrides merged over the inherited `Theme` (inline style over the theme, inherited down the tree); the spec `Common` carries one.
 - `bul::spec`: declarative trees (`spec::Stack`, `spec::Field`, ... built with `spec::build` / `spec::node`), sharing the `Widget` base properties.
 - `Switch`: an on/off track with a thumb (`text`, `checked` / `onCheckedChange`, `readOnly`).

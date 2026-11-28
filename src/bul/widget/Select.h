@@ -59,7 +59,11 @@ public:
     Select&            required(bool value) noexcept;
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Select"; }
+    static constexpr std::string_view kTypeName{"Select"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] bool state(std::string_view name) const override { return name == "disabled" ? disabled() : Widget::state(name); }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Select& apply(spec::Select const& node);

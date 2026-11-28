@@ -52,7 +52,6 @@ public:
 bul::Theme testTheme() {
     bul::Theme theme   = bul::Theme::neutral();
     theme.fontScale    = 1.f;
-    theme.padding      = 4.f;
     theme.gap          = 3.f;
     return theme;
 }
@@ -227,5 +226,5 @@ TEST(Theme, neutralDefaultsAreNeutral) {
     EXPECT_FLOAT_EQ(theme.scrim, 0.22f);
     EXPECT_FLOAT_EQ(theme.fontScale, 1.f);
     EXPECT_GT(theme.gap, 0.f);
-    EXPECT_GT(theme.padding, 0.f);
+    EXPECT_FALSE(theme.padding.has_value());
 }

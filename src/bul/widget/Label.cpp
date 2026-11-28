@@ -3,6 +3,7 @@
 #include "bul/widget/Label.h"
 
 #include <algorithm>
+#include <cctype>
 #include <utility>
 #include <vector>
 
@@ -114,6 +115,58 @@ wrapParagraph(Canvas const& canvas, float size, std::string_view paragraph, floa
     return offered > 0.f ? std::min(offered, cap) : cap;
 }
 
+/// `text-transform`: ASCII casing, which is what the engine font can show
+/// without a different face.
+[[nodiscard]] std::string transformText(std::string const& text, TextTransform transform) {
+    if (transform == TextTransform::None) {
+        return text;
+    }
+    std::string out = text;
+    if (transform == TextTransform::Uppercase || transform == TextTransform::Lowercase) {
+        for (char& c : out) {
+            auto const u = static_cast<unsigned char>(c);
+            c = static_cast<char>(transform == TextTransform::Uppercase ? std::toupper(u) : std::tolower(u));
+        }
+        return out;
+    }
+    bool wordStart = true;
+    for (char& c : out) {
+        auto const u = static_cast<unsigned char>(c);
+        if (std::isalpha(u) != 0) {
+            if (wordStart) {
+                c = static_cast<char>(std::toupper(u));
+            }
+            wordStart = false;
+        } else if (c == ' ' || c == '\t' || c == '\n') {
+            wordStart = true;
+        }
+    }
+    return out;
+}
+
+/// `white-space`: only `normal` line-breaks.
+[[nodiscard]] bool wrapsFor(Theme const& theme, bool wrap) {
+    if (!theme.whiteSpace) {
+        return wrap;
+    }
+    return *theme.whiteSpace == WhiteSpace::Normal ? wrap : false;
+}
+
+[[nodiscard]] VAlign valignFor(Theme const& theme, VAlign value) {
+    if (!theme.verticalAlign) {
+        return value;
+    }
+    switch (*theme.verticalAlign) {
+    case TextVertical::Top:
+        return VAlign::Top;
+    case TextVertical::Middle:
+        return VAlign::Center;
+    case TextVertical::Bottom:
+        return VAlign::Bottom;
+    }
+    return value;
+}
+
 struct Line {
     std::string text;
     float       width{};
@@ -133,13 +186,15 @@ struct TextLayout {
     bool               wrap,
     std::size_t        maxLines,
     bool               elide,
-    float              spacing
+    float              spacing,
+    float              lineHeightOverride,
+    float              letterSpacing = 0.f
 ) {
     TextLayout               layout;
     std::vector<std::string> lines;
 
     for (std::string_view const paragraph : splitParagraphs(text)) {
-        bool const tooWide = maxWidth > 0.f && frameWidth(buildFrame(canvas, size, paragraph)) > maxWidth;
+        bool const tooWide = maxWidth > 0.f && frameWidth(buildFrame(canvas, size, paragraph, letterSpacing)) > maxWidth;
         if (wrap && tooWide) {
             std::vector<std::string> wrapped = wrapParagraph(canvas, size, paragraph, maxWidth);
             lines.insert(lines.end(), wrapped.begin(), wrapped.end());
@@ -162,11 +217,11 @@ struct TextLayout {
         }
     }
 
-    float const lineHeight = canvas.lineHeight(size);
+    float const lineHeight = lineHeightOverride > 0.f ? lineHeightOverride : canvas.lineHeight(size);
     float       widest     = 0.f;
     layout.lines.reserve(lines.size());
     for (auto& line : lines) {
-        float const width = frameWidth(buildFrame(canvas, size, line));
+        float const width = frameWidth(buildFrame(canvas, size, line, letterSpacing));
         widest            = std::max(widest, width);
         layout.lines.push_back(Line{std::move(line), width});
     }
@@ -226,31 +281,46 @@ Label& Label::elide(bool value) noexcept {
 }
 
 Size Label::measureContent(float availableWidth, Theme const& theme, Canvas const& canvas) const {
-    float const      size   = theme.fontScale * mScale;
-    TextLayout const layout = buildLayout(
+    float const       size   = theme.fontScale * mScale;
+    std::string const text   = transformText(mText, theme.textTransform.value_or(TextTransform::None));
+    TextLayout const  layout = buildLayout(
         canvas,
         size,
-        mText,
+        text,
         limitFor(availableWidth, mMaxWidth),
-        mWrap,
+        wrapsFor(theme, mWrap),
         mMaxLines,
         mElide,
-        mLineSpacing * theme.fontScale
+        mLineSpacing * theme.fontScale,
+        theme.lineHeight.value_or(0.f),
+        theme.letterSpacing
     );
     return {layout.width + mMargin.horizontal(), layout.height + mMargin.vertical()};
 }
 
 void Label::paintContent(Canvas& canvas, Theme const& theme) const {
-    float const      size    = theme.fontScale * mScale;
-    float const      spacing = mLineSpacing * theme.fontScale;
-    TextLayout const layout =
-        buildLayout(canvas, size, mText, limitFor(mBounds.width, mMaxWidth), mWrap, mMaxLines, mElide, spacing);
+    float const       size    = theme.fontScale * mScale;
+    float const       spacing = mLineSpacing * theme.fontScale;
+    std::string const text    = transformText(mText, theme.textTransform.value_or(TextTransform::None));
+    TextLayout const  layout  = buildLayout(
+        canvas,
+        size,
+        text,
+        limitFor(mBounds.width, mMaxWidth),
+        wrapsFor(theme, mWrap),
+        mMaxLines,
+        mElide,
+        spacing,
+        theme.lineHeight.value_or(0.f),
+        theme.letterSpacing
+    );
 
     float const lineHeight = canvas.lineHeight(size);
     float       y          = mBounds.y;
-    if (mVAlign == VAlign::Center) {
+    VAlign const vAlign = valignFor(theme, mVAlign);
+    if (vAlign == VAlign::Center) {
         y += (mBounds.height - layout.height) / 2.f;
-    } else if (mVAlign == VAlign::Bottom) {
+    } else if (vAlign == VAlign::Bottom) {
         y = mBounds.bottom() - layout.height;
     }
 
@@ -259,14 +329,15 @@ void Label::paintContent(Canvas& canvas, Theme const& theme) const {
         color = mColor;
     }
     for (Line const& line : layout.lines) {
-        float x = mBounds.x;
-        if (mAlign == Align::Center) {
+        Align const align = theme.textAlign.value_or(mAlign);
+        float       x     = mBounds.x;
+        if (align == Align::Center) {
             x += (mBounds.width - line.width) / 2.f;
-        } else if (mAlign == Align::Right) {
+        } else if (align == Align::Right) {
             x = mBounds.right() - line.width;
         }
         if (!line.text.empty()) {
-            GlyphFrame const frame = buildFrame(canvas, size, line.text);
+            GlyphFrame const frame = buildFrame(canvas, size, line.text, theme.letterSpacing);
             drawFragment(
                 canvas,
                 line.text,
@@ -276,8 +347,10 @@ void Label::paintContent(Canvas& canvas, Theme const& theme) const {
                 frame.offsets.size() - 1,
                 {x, y},
                 size,
-                color
+                color,
+                theme.letterSpacing
             );
+
         }
         y += lineHeight + spacing;
     }

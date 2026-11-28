@@ -24,7 +24,11 @@ namespace bul {
 /// the label and the description without each of them being told separately.
 class BUL_API Field final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Field"; }
+    static constexpr std::string_view kTypeName{"Field"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] std::vector<Widget*> children() const override;
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Field& apply(spec::Field const& node);

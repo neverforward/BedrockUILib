@@ -36,7 +36,9 @@ public:
     [[nodiscard]] bool               required() const noexcept { return mLocalRequired || mState.required; }
     [[nodiscard]] std::string const& text() const noexcept { return mText; }
 
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "FieldLabel"; }
+    static constexpr std::string_view kTypeName{"FieldLabel"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     FieldLabel& apply(spec::FieldLabel const& node);

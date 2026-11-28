@@ -1,6 +1,7 @@
 #pragma once
 
 #include <functional>
+#include <optional>
 #include <string>
 #include <string_view>
 #include <utility>
@@ -65,6 +66,22 @@ public:
     /// active style sheet that match it, then its own inline `style()`.
     [[nodiscard]] Theme resolvedTheme(Theme const& theme) const;
 
+    /// The style itself (sheet rules overlaid by the inline style), which is what
+    /// the geometry reads: `margin`, `width` / `height` and their bounds.
+    [[nodiscard]] Style resolvedStyle() const;
+
+    /// Whether a `display: none` rule drops this widget from the layout.
+    [[nodiscard]] bool displayed(Theme const& theme) const;
+
+    /// Fills a box, rounding the corners when `radius` is positive. With a
+    /// border, the fill is inset by its width so it cannot poke out around the
+    /// stroke.
+    static void
+    paintBox(Canvas& canvas, Rect const& rect, float radius, Rgba color, float alpha = 1.f, float border = 0.f);
+    /// The border of the same box.
+    static void
+    paintBorder(Canvas& canvas, Rect const& rect, float radius, Rgba color, float thickness, float alpha = 1.f);
+
     /// The element name a style-sheet rule can select, e.g. "Button".
     [[nodiscard]] virtual std::string_view typeName() const noexcept { return {}; }
 
@@ -75,6 +92,26 @@ public:
     /// An id selector target, like the `id` attribute of an element.
     Widget&                          id(std::string value);
     [[nodiscard]] std::string const& id() const noexcept { return mId; }
+
+    /// An attribute a stylesheet rule can select on, like the `data-*`
+    /// attributes of an element: `.attr("kind", "danger")` matches
+    /// `[kind=danger]`. `type`, `class` and `id` are answered automatically.
+    Widget& attr(std::string name, std::string value);
+    [[nodiscard]] std::optional<std::string> attribute(std::string_view name) const;
+
+    /// The container this widget was added to, or nullptr for a root.
+    [[nodiscard]] Widget* parent() const noexcept { return mParent; }
+    void                  setParent(Widget* value) noexcept { mParent = value; }
+    /// Whether the widget currently has a state a `:pseudo` selector can test.
+    /// The base answers `hover` and `focus`; components add `disabled`,
+    /// `checked`, `invalid`, `required` and `read-only`.
+    [[nodiscard]] virtual bool state(std::string_view name) const;
+    [[nodiscard]] bool         hoveredState() const noexcept { return mHoveredState; }
+    [[nodiscard]] bool         focusedState() const noexcept { return mFocusedState; }
+
+    /// The children in visual order. The base has none; containers override it,
+    /// which is what `:first-child`, `:nth-child`, `+` and `~` match against.
+    [[nodiscard]] virtual std::vector<Widget*> children() const { return {}; }
 
     Widget& margin(float all) noexcept {
         mMargin = {all, all, all, all};
@@ -235,18 +272,24 @@ public:
 protected:
     [[nodiscard]] Rect contentRect(Rect const& outer) const noexcept {
         return {
-            outer.x + mMargin.left,
-            outer.y + mMargin.top,
-            outer.width - mMargin.horizontal(),
-            outer.height - mMargin.vertical()
+            outer.x + mEffectiveMargin.left,
+            outer.y + mEffectiveMargin.top,
+            outer.width - mEffectiveMargin.horizontal(),
+            outer.height - mEffectiveMargin.vertical()
         };
     }
 
     Rect        mBounds{};
     Insets      mMargin{};
+    /// The margin the last measure resolved (style margin, else mMargin).
+    mutable Insets mEffectiveMargin{};
     Style       mStyle{};
     std::string mClassName{};
     std::string mId{};
+    Widget*     mParent{};
+    bool        mHoveredState{};
+    bool        mFocusedState{};
+    std::vector<std::pair<std::string, std::string>> mAttributes{};
 
     std::function<void()>     mOnClick;
     std::function<void()>     mOnFocus;

@@ -42,7 +42,11 @@ public:
     Switch&            required(bool value) noexcept;
     [[nodiscard]] bool required() const noexcept { return mLocalRequired || mState.required; }
 
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Switch"; }
+    static constexpr std::string_view kTypeName{"Switch"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] bool state(std::string_view name) const override { return name == "disabled" ? disabled() : name == "checked" ? checked() : name == "read-only" ? readOnly() : Widget::state(name); }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Switch& apply(spec::Switch const& node);

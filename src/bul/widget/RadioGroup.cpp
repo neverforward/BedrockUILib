@@ -170,6 +170,7 @@ RadioGroup& RadioGroup::add(std::string value, std::string text) {
 
 RadioGroup& RadioGroup::add(std::string value, std::string text, bool disabled) {
     mRadios.push_back(std::make_unique<Radio>(*this, std::move(value), std::move(text), disabled));
+    mRadios.back()->setParent(this);
     return *this;
 }
 
@@ -259,20 +260,22 @@ Size RadioGroup::measureContent(float availableWidth, Theme const& theme, Canvas
 }
 
 void RadioGroup::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) {
-    Widget::layout(outer, theme, canvas);
+    Theme const resolved = resolvedTheme(theme);
+
+    Widget::layout(outer, resolved, canvas);
     if (mRadios.empty()) {
         return;
     }
     bool const  vertical = mDirection == Stack::Direction::Vertical;
-    float const gap      = mGap >= 0.f ? mGap : theme.gap;
+    float const gap      = mGap >= 0.f ? mGap : resolved.gap;
     float       cursor   = vertical ? mBounds.y : mBounds.x;
     for (auto& radio : mRadios) {
-        Size const size = radio->measure(mBounds.width, theme, canvas);
+        Size const size = radio->measure(mBounds.width, resolved, canvas);
         if (vertical) {
-            radio->layout({mBounds.x, cursor, mBounds.width, size.height}, theme, canvas);
+            radio->layout({mBounds.x, cursor, mBounds.width, size.height}, resolved, canvas);
             cursor += size.height + gap;
         } else {
-            radio->layout({cursor, mBounds.y, size.width, size.height}, theme, canvas);
+            radio->layout({cursor, mBounds.y, size.width, size.height}, resolved, canvas);
             cursor += size.width + gap;
         }
     }
@@ -322,4 +325,13 @@ RadioGroup& RadioGroup::apply(spec::RadioGroup const& node) {
     }
     return *this;
 }
+std::vector<Widget*> RadioGroup::children() const {
+    std::vector<Widget*> out;
+    out.reserve(mRadios.size());
+    for (auto const& radio : mRadios) {
+        out.push_back(radio.get());
+    }
+    return out;
+}
+
 } // namespace bul

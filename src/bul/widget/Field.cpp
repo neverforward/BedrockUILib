@@ -89,6 +89,7 @@ void Field::setControlState(ControlState const& state) {
 void Field::adopt(std::unique_ptr<Widget>& slot, std::unique_ptr<Widget> widget) {
     slot = std::move(widget);
     if (slot) {
+        slot->setParent(this);
         slot->setControlState(mEffective);
     }
 }
@@ -162,8 +163,10 @@ Size Field::measureContent(float availableWidth, Theme const& theme, Canvas cons
 }
 
 void Field::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) {
+    Theme const resolved = resolvedTheme(theme);
+
     mBounds         = contentRect(outer);
-    float const gap = gapOf(theme);
+    float const gap = gapOf(resolved);
 
     if (mOrientation == Orientation::Vertical) {
         float y = mBounds.y;
@@ -171,8 +174,8 @@ void Field::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
             if (!child) {
                 continue;
             }
-            Size const size = child->measure(mBounds.width, theme, canvas);
-            child->layout({mBounds.x, y, mBounds.width, size.height}, theme, canvas);
+            Size const size = child->measure(mBounds.width, resolved, canvas);
+            child->layout({mBounds.x, y, mBounds.width, size.height}, resolved, canvas);
             y += size.height + gap;
         }
         return;
@@ -183,11 +186,11 @@ void Field::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
     Size  controlSize{};
     float leftWidth = 0.f;
     if (mLabel) {
-        labelSize = mLabel->measure(mBounds.width, theme, canvas);
+        labelSize = mLabel->measure(mBounds.width, resolved, canvas);
         leftWidth = labelSize.width;
     }
     if (mDescription) {
-        descriptionSize = mDescription->measure(mBounds.width, theme, canvas);
+        descriptionSize = mDescription->measure(mBounds.width, resolved, canvas);
         leftWidth       = std::max(leftWidth, descriptionSize.width);
     }
 
@@ -195,7 +198,7 @@ void Field::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
     float const controlX     = mBounds.x + reserve;
     float const controlWidth = std::max(mBounds.right() - controlX, 0.f);
     if (mControl) {
-        controlSize = mControl->measure(controlWidth, theme, canvas);
+        controlSize = mControl->measure(controlWidth, resolved, canvas);
     }
 
     float const centerY    = mBounds.y + mBounds.height / 2.f;
@@ -203,15 +206,15 @@ void Field::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) 
     float       leftY      = centerY - leftHeight / 2.f;
 
     if (mLabel) {
-        mLabel->layout({mBounds.x, leftY, leftWidth, labelSize.height}, theme, canvas);
+        mLabel->layout({mBounds.x, leftY, leftWidth, labelSize.height}, resolved, canvas);
         leftY += labelSize.height + gap;
     }
     if (mDescription) {
-        mDescription->layout({mBounds.x, leftY, leftWidth, descriptionSize.height}, theme, canvas);
+        mDescription->layout({mBounds.x, leftY, leftWidth, descriptionSize.height}, resolved, canvas);
     }
     if (mControl) {
         mControl
-            ->layout({controlX, centerY - controlSize.height / 2.f, controlWidth, controlSize.height}, theme, canvas);
+            ->layout({controlX, centerY - controlSize.height / 2.f, controlWidth, controlSize.height}, resolved, canvas);
     }
 }
 
@@ -284,4 +287,14 @@ Field& Field::apply(spec::Field const& node) {
     required(node.required);
     return *this;
 }
+std::vector<Widget*> Field::children() const {
+    std::vector<Widget*> out;
+    for (Widget* child : {mLabel.get(), mControl.get(), mDescription.get()}) {
+        if (child != nullptr) {
+            out.push_back(child);
+        }
+    }
+    return out;
+}
+
 } // namespace bul

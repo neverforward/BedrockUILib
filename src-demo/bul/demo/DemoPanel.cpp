@@ -754,7 +754,7 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
             .checkbox("Accept terms")
             .add(std::make_unique<Divider>())
             .button("Built by a builder", [] { log().debug("demo: spec button pressed"); })
-            .button("Button with styles", [] {}, [](bul::Button& btn) { btn.style({.button = Rgba(0x007700)}); });
+            .button("Button with styles", [] {}, [](bul::Button& btn) { btn.style({.backgroundColor = Rgba(0x007700)}); });
     });
 
     auto body = column(8.f);
@@ -875,23 +875,54 @@ page(std::string title, std::string intro, std::unique_ptr<Widget> body, std::fu
     return theme;
 }
 
-/// The class/id rules the page demonstrates; installed only when asked for.
-void applyClassRules() {
-    auto const panel = Rgba::fromRgb(0x1A1D24);
+// --------------------------------------------------------------------- style page
+
+void installStyleRules() {
+    using namespace bul::literals;
 
     StyleSheet sheet;
-    sheet.rule(
-        {.className = "danger"},
-        {.primary = Rgba::fromRgb(0xE5484D), .primaryHover = Rgba::fromRgb(0xC93C41), .primaryText = panel}
-    );
-    sheet.rule(
-        {.id = "submit"},
-        {.primary = Rgba::fromRgb(0x46A758), .primaryHover = Rgba::fromRgb(0x3B8C4B), .primaryText = panel}
-    );
+    sheet.className("card").set({
+        .backgroundColor = Rgba::fromRgb(0x161B24),
+        .borderColor     = Rgba::fromRgb(0x2E3A4C),
+        .borderWidth     = 1.f,
+        .borderRadius    = 10.f,
+        .padding         = Padding::all(8.f),
+    });
+
+    sheet.type("Label").className("big").set({.fontSize = 1.6_em});
+    sheet.type("Label").className("spaced").set({.letterSpacing = 2.f});
+    sheet.type("Label").className("emph").set({.fontWeight = FontWeight::Bold, .color = Rgba::fromRgb(0xFFD479)});
+    sheet.type("Label").className("quote").set({.fontStyle = FontStyle::Italic});
+    sheet.type("Label").className("glitch").set({.obfuscated = true});
+    sheet.type("Label").className("upper").set({.textTransform = TextTransform::Uppercase});
+    sheet.type("Label").className("center").set({.textAlign = Align::Center});
+    sheet.type("Label").className("dim").set({.opacity = 0.5f});
+    sheet.type("Label").className("hidden").set({.visibility = Visibility::Hidden});
+    sheet.type("Label").className("gone").set({.display = Display::None});
+
+    // Descendant + structural pseudo class.
+    sheet.className("rows").type("Label").pseudo("first-child").set({.color = Rgba::fromRgb(0x59A9FF)});
+
+    // Attribute selector.
+    sheet.type("Badge").attr("badge", "beta").set({
+        .backgroundColor = Rgba::fromRgb(0x23324A),
+        .color           = Rgba::fromRgb(0x8CC4FF),
+        .padding         = Padding::all(3.f),
+        .borderRadius    = 4.f,
+    });
+
+    // Components: surface, hover state, field padding and rounded corners.
+    sheet.type("Button").className("danger").set({
+        .backgroundColor = Rgba::fromRgb(0xE5484D),
+        .borderRadius    = 8.f,
+    });
+    sheet.type("Button").className("danger").pseudo("hover").set({.backgroundColor = Rgba::fromRgb(0xC93C41)});
+    sheet.type("Input").className("field").set({.padding = Padding::symmetric(10.f, 6.f)});
+
     setStyleSheet(std::move(sheet));
 }
 
-void clearClassRules() { setStyleSheet({}); }
+void clearStyleRules() { setStyleSheet({}); }
 
 [[nodiscard]] std::unique_ptr<Widget> stylePage(std::function<void()> back) {
     auto body = column(8.f);
@@ -905,51 +936,105 @@ void clearClassRules() { setStyleSheet({}); }
         body->add(std::move(presets));
     }
 
-    body->add(caption("style on a container colours its whole subtree"));
-
-    auto group = column(6.f);
-    group->style({.text = Rgba::fromRgb(0x8CC4FF), .accent = Rgba::fromRgb(0xFFB454)});
-    group->add(std::make_unique<Label>("Inherited text colour"));
-
+    body->add(caption("inline style on a container colours its whole subtree"));
     {
+        auto group = column(6.f);
+        group->style({.color = Rgba::fromRgb(0x8CC4FF), .accentColor = Rgba::fromRgb(0xFFB454)});
+        group->add(std::make_unique<Label>("Inherited text colour"));
         auto child = std::make_unique<Label>("A child may override it");
-        child->style({.text = Rgba::fromRgb(0x46A758)});
+        child->style({.color = Rgba::fromRgb(0x46A758)});
         group->add(std::move(child));
-    }
-    {
         auto box = std::make_unique<Checkbox>();
         box->text("Accent comes from the container");
         box->checked(true);
         group->add(std::move(box));
-    }
-    {
-        auto button = std::make_unique<Button>("Styled button");
-        button->style({.primary = Rgba::fromRgb(0x46A758), .primaryText = Rgba::fromRgb(0x0E1116)});
-        group->add(std::move(button));
+        auto styledButton = std::make_unique<Button>("Styled button");
+        styledButton->style({.backgroundColor = Rgba::fromRgb(0x46A758), .color = Rgba::fromRgb(0x0E1116)});
+        group->add(std::move(styledButton));
+        body->add(std::move(group));
     }
 
-    body->add(std::move(group));
-
-    body->add(caption("stylesheet rules: .danger / #submit"));
+    body->add(caption("stylesheet: type / class / id / attribute / pseudo selectors"));
     {
         auto commands = row(6.f);
-        commands->add(std::make_unique<Button>("Apply rules", [] { applyClassRules(); }));
-        commands->add(std::make_unique<Button>("Reset rules", [] { clearClassRules(); }));
+        commands->add(std::make_unique<Button>("Apply rules", [] { installStyleRules(); }));
+        commands->add(std::make_unique<Button>("Clear rules", [] { clearStyleRules(); }));
         body->add(std::move(commands));
     }
+
+    body->add(caption("box: background, border, padding and border-radius on class \"card\""));
     {
-        auto styled = row(6.f);
-        auto danger = std::make_unique<Button>("class: danger");
-        danger->className("danger");
-        styled->add(std::move(danger));
-        auto submit = std::make_unique<Button>("id: submit");
-        submit->id("submit");
-        styled->add(std::move(submit));
-        body->add(std::move(styled));
+        auto card = column(4.f);
+        card->className("card");
+        card->add(std::make_unique<Label>("className = \"card\""));
+        card->add(caption("background, 1 unit border, 8 padding, radius 10"));
+        body->add(std::move(card));
     }
 
-    return page("Style", "Inline style over the theme, like style=\"\" over <link>.", std::move(body), back);
+    body->add(caption("text: size, spacing, weight, style, transform, obfuscated"));
+    {
+        auto lines = column(3.f);
+        auto add   = [&lines](char const* text, char const* className) {
+            auto label = std::make_unique<Label>(text);
+            label->className(className);
+            lines->add(std::move(label));
+        };
+        add("big: font-size 1.6em", "big");
+        add("spaced: letter-spacing 2", "spaced");
+        add("emph: bold and a colour", "emph");
+        add("quote: italic", "quote");
+        add("glitch: obfuscated random glyphs", "glitch");
+        add("upper: text-transform uppercase", "upper");
+        add("centered: text-align center", "center");
+        add("dim: opacity 0.5", "dim");
+        add("hidden: visibility hidden, space kept", "hidden");
+        add("gone: display none, no space at all", "gone");
+        body->add(std::move(lines));
+    }
+
+    body->add(caption("structural: .rows Label:first-child"));
+    {
+        auto rows = column(3.f);
+        rows->className("rows");
+        rows->add(std::make_unique<Label>("the first child takes the accent colour"));
+        rows->add(std::make_unique<Label>("the second child keeps the default"));
+        body->add(std::move(rows));
+    }
+
+    body->add(caption("attribute: Badge[badge=beta]"));
+    {
+        auto badges = row(6.f);
+        auto beta   = std::make_unique<Badge>("beta", Badge::Variant::Secondary);
+        beta->attr("badge", "beta");
+        badges->add(std::move(beta));
+        badges->add(std::make_unique<Badge>("plain", Badge::Variant::Secondary));
+        body->add(std::move(badges));
+    }
+
+    body->add(caption("components: .danger surface, :hover colour, rounded corners, field padding"));
+    {
+        auto components = row(6.f);
+        auto danger     = std::make_unique<Button>("danger", [] {});
+        danger->className("danger");
+        components->add(std::move(danger));
+        auto again = std::make_unique<Button>("hover me", [] {});
+        again->className("danger");
+        components->add(std::move(again));
+        body->add(std::move(components));
+    }
+    {
+        auto input = std::make_unique<Input>();
+        input->placeholder("Input.field: padding from the sheet");
+        input->className("field");
+        body->add(std::move(input));
+    }
+
+    auto view = std::make_unique<ScrollView>();
+    view->viewport(300.f);
+    view->content(std::move(body));
+    return page("Style", "Inline style over the theme, and a stylesheet with selectors.", std::move(view), back);
 }
+
 // ------------------------------------------------------------------- scroll page
 
 [[nodiscard]] std::unique_ptr<Widget> scrollPage(std::function<void()> back) {

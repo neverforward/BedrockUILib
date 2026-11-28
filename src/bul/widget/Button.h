@@ -19,7 +19,11 @@ namespace bul {
 /// scale and the padding, not the colour.
 class BUL_API Button final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Button"; }
+    static constexpr std::string_view kTypeName{"Button"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] bool state(std::string_view name) const override { return name == "disabled" ? disabled() : Widget::state(name); }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Button& apply(spec::Button const& node);

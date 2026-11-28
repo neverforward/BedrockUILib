@@ -27,7 +27,7 @@ void drawModal(MinecraftUIRenderContext& context) {
     // The window is the content size plus its own padding: measuring the tree
     // gives the children only, so shrinking the frame by the padding used to clip
     // the last child (the button) outside it.
-    float const padding  = theme.padding;
+    float const padding  = theme.windowPadding;
     float const maxWidth = std::min(screen.width * 0.7f, 360.f);
     Size const  wanted   = root->measure(std::max(maxWidth - 2.f * padding, 40.f), theme, canvas);
     float const width    = std::min(wanted.width + 2.f * padding, maxWidth);

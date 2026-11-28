@@ -18,9 +18,11 @@ Badge::Badge(std::string text, Variant variant) : mText(std::move(text)), mVaria
 
 Size Badge::measureContent(float, Theme const& theme, Canvas const& canvas) const {
     float const scale = theme.fontScale * kScale;
+    float const padX  = theme.padding ? theme.padding->horizontal() / 2.f : kPadX;
+    float const padY  = theme.padding ? theme.padding->vertical() / 2.f : kPadY;
     return {
-        canvas.textWidth(mText, scale) + 2.f * kPadX + mMargin.horizontal(),
-        canvas.lineHeight(scale) + 2.f * kPadY + mMargin.vertical()
+        canvas.textWidth(mText, scale) + 2.f * padX + mMargin.horizontal(),
+        canvas.lineHeight(scale) + 2.f * padY + mMargin.vertical()
     };
 }
 
@@ -53,10 +55,23 @@ void Badge::paintContent(Canvas& canvas, Theme const& theme) const {
         break;
     }
 
-    if (filled) {
-        canvas.fill(mBounds, surface, 1.f);
+    if (theme.background) {
+        surface = *theme.background;
+        filled  = true;
     }
-    canvas.outline(mBounds, border, 1.f);
+    if (theme.color) {
+        textColor = *theme.color;
+    }
+    if (theme.border) {
+        border = *theme.border;
+    }
+    float const borderWidth = theme.borderWidth.value_or(1.f);
+
+    float const radius = theme.borderRadius;
+    if (filled) {
+        Widget::paintBox(canvas, mBounds, radius, surface, 1.f, borderWidth);
+    }
+    Widget::paintBorder(canvas, mBounds, radius, border, borderWidth, 1.f);
     canvas.text(
         mText,
         {mBounds.x, mBounds.y + (mBounds.height - canvas.lineHeight(scale)) / 2.f},

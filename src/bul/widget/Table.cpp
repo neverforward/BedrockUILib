@@ -60,6 +60,9 @@ void Table::ensure(std::size_t row, std::size_t columnValue) {
 
 Table& Table::cell(std::size_t row, std::size_t columnValue, std::unique_ptr<Widget> child) {
     ensure(row, columnValue);
+    if (child) {
+        child->setParent(this);
+    }
     mCells[row * mColumns.size() + columnValue] = std::move(child);
     return *this;
 }
@@ -97,7 +100,8 @@ Size Table::measureContent(float availableWidth, Theme const& theme, Canvas cons
 }
 
 void Table::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) {
-    mBounds = contentRect(outer);
+    Theme const resolved = resolvedTheme(theme);
+    mBounds              = contentRect(outer);
     if (mColumns.empty() || mRows.empty()) {
         return;
     }
@@ -229,4 +233,14 @@ Table& Table::apply(spec::Table const& node) {
     }
     return *this;
 }
+std::vector<Widget*> Table::children() const {
+    std::vector<Widget*> out;
+    for (auto const& cell : mCells) {
+        if (cell) {
+            out.push_back(cell.get());
+        }
+    }
+    return out;
+}
+
 } // namespace bul

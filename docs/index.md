@@ -17,9 +17,9 @@ features:
   - title: Rich components
     icon: 🧩
     details: Most of the common controls, from text to panels.
-  - title: CSS-like stylesheet
+  - title: Stylesheet
     icon: 🎨
-    details: Theme tokens and per-widget Style, plus a CSS-like StyleSheet with type, class and id selectors.
+    details: Theme tokens and per-widget Style, plus a StyleSheet with type, class and id selectors.
   - title: Tree structure
     icon: 🌳
     details: Build widgets by hand, or describe the tree with bul::spec structs and let the library assemble it.

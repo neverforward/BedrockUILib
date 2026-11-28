@@ -88,14 +88,16 @@ struct GlyphFrame {
     std::vector<float>       prefix;  // width before that code point
 };
 
-[[nodiscard]] inline GlyphFrame buildFrame(Canvas const& canvas, float scale, std::string_view text) {
+[[nodiscard]] inline GlyphFrame
+buildFrame(Canvas const& canvas, float scale, std::string_view text, float letterSpacing = 0.f) {
     GlyphFrame  frame;
     std::size_t offset = 0;
     frame.offsets.push_back(0);
     frame.prefix.push_back(0.f);
     while (offset < text.size()) {
-        std::size_t const next = nextCodePoint(text, offset);
-        frame.prefix.push_back(frame.prefix.back() + advanceOf(canvas, scale, text.substr(offset, next - offset)));
+        std::size_t const next    = nextCodePoint(text, offset);
+        float const       advance = advanceOf(canvas, scale, text.substr(offset, next - offset));
+        frame.prefix.push_back(frame.prefix.back() + advance + (next < text.size() ? letterSpacing : 0.f));
         frame.offsets.push_back(next);
         offset = next;
     }
@@ -142,7 +144,8 @@ inline void drawFragment(
     std::size_t                     end,
     Point                           origin,
     float                           scale,
-    Rgba                            color
+    Rgba                            color,
+    float                           letterSpacing = 0.f
 ) {
     std::size_t index = begin;
     while (index < end) {
@@ -156,8 +159,14 @@ inline void drawFragment(
         }
         float const x     = origin.x + prefix[index];
         float const width = prefix[runEnd] - prefix[index];
-        canvas
-            .text(slice(text, offsets[index], offsets[runEnd]), {x, origin.y}, width + 2.f, color, scale, Align::Left);
+        if (letterSpacing == 0.f) {
+            canvas.text(slice(text, offsets[index], offsets[runEnd]), {x, origin.y}, width + 2.f, color, scale, Align::Left);
+        } else {
+            // Letterspaced runs go one glyph at a time, at their own advance.
+            for (std::size_t i = index; i < runEnd; ++i) {
+                canvas.text(slice(text, offsets[i], offsets[i + 1]), {origin.x + prefix[i], origin.y}, 0.f, color, scale, Align::Left);
+            }
+        }
         index = runEnd;
     }
 }

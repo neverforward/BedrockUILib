@@ -27,7 +27,11 @@ namespace bul {
 /// testable with a recording canvas.
 class BUL_API Input final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Input"; }
+    static constexpr std::string_view kTypeName{"Input"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] bool state(std::string_view name) const override { return name == "disabled" ? disabled() : name == "invalid" ? invalid() : Widget::state(name); }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Input& apply(spec::Input const& node);

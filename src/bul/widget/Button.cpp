@@ -15,17 +15,28 @@ Button::Button(std::string text, std::function<void()> onClick)
 Button::Metrics Button::metrics(Theme const& theme) const noexcept {
     // Sizes only change scale and padding; colours come from the type. Default
     // keeps the previous height (line + 2 * 5) so existing layouts do not jump.
+    Metrics profile{};
     switch (mSize) {
     case Size::XSmall:
-        return {0.8f * theme.fontScale, 6.f, 1.f};
+        profile = {0.8f * theme.fontScale, 6.f, 1.f};
+        break;
     case Size::Small:
-        return {0.9f * theme.fontScale, 8.f, 3.f};
+        profile = {0.9f * theme.fontScale, 8.f, 3.f};
+        break;
     case Size::Large:
-        return {1.15f * theme.fontScale, 14.f, 8.f};
+        profile = {1.15f * theme.fontScale, 14.f, 8.f};
+        break;
     case Size::Default:
     default:
-        return {1.f * theme.fontScale, 10.f, 5.f};
+        profile = {1.f * theme.fontScale, 10.f, 5.f};
+        break;
     }
+    // A padding in the style or the stylesheet replaces the size profile's.
+    if (theme.padding) {
+        profile.padX = theme.padding->horizontal() / 2.f;
+        profile.padY = theme.padding->vertical() / 2.f;
+    }
+    return profile;
 }
 
 bul::Size Button::measureContent(float, Theme const& theme, Canvas const& canvas) const {
@@ -73,11 +84,27 @@ void Button::paintContent(Canvas& canvas, Theme const& theme) const {
         break;
     }
 
+    // The style layer wins over the type's own colours: `background-color` paints
+    // the fill, `color` the label, `border-*` the outline.
+    if (theme.background) {
+        surface = *theme.background;
+        filled  = true;
+    }
+    if (theme.color) {
+        textColor = *theme.color;
+    }
+    if (theme.border) {
+        border   = *theme.border;
+        outlined = true;
+    }
+    float const borderWidth = theme.borderWidth.value_or(1.f);
+
+    float const radius = theme.borderRadius;
     if (filled) {
-        canvas.fill(mBounds, surface, fade);
+        Widget::paintBox(canvas, mBounds, radius, surface, fade, outlined ? borderWidth : 0.f);
     }
     if (outlined) {
-        canvas.outline(mBounds, border.withAlpha(fade), 1.f);
+        Widget::paintBorder(canvas, mBounds, radius, border, borderWidth, fade);
     }
     canvas.text(
         mText,

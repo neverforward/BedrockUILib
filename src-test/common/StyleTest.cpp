@@ -24,12 +24,12 @@ constexpr bul::Rgba kGreen = bul::Rgba::fromRgb(0x46A758);
 TEST(Style, EmptyByDefault) {
     bul::Style empty;
     EXPECT_TRUE(empty.empty());
-    EXPECT_FALSE((bul::Style{.text = kRed}).empty());
+    EXPECT_FALSE((bul::Style{.color = kRed}).empty());
 }
 
 TEST(Style, OverridesOnlyTheTokensItSets) {
     bul::Theme const base     = testTheme();
-    bul::Theme const resolved = bul::applyStyle(base, bul::Style{.accent = kGreen});
+    bul::Theme const resolved = bul::applyStyle(base, bul::Style{.accentColor = kGreen});
 
     EXPECT_EQ(resolved.accent, kGreen);
     EXPECT_EQ(resolved.text, base.text);
@@ -42,7 +42,7 @@ TEST(Style, ColoursASingleWidget) {
     bul::Theme const      theme = testTheme();
 
     bul::Label label{"Hello"};
-    label.style({.text = kRed});
+    label.style({.color = kRed});
     label.layout({0.f, 0.f, 60.f, 9.f}, theme, canvas);
     label.paint(canvas, theme);
 
@@ -55,7 +55,7 @@ TEST(Style, AContainerStyleReachesItsChildren) {
     bul::Theme const      theme = testTheme();
 
     auto stack = std::make_unique<bul::Stack>(bul::Stack::Direction::Vertical);
-    stack->style({.text = kRed});
+    stack->style({.color = kRed});
     stack->add(std::make_unique<bul::Label>("Hello"));
     stack->layout({0.f, 0.f, 100.f, 9.f}, theme, canvas);
     stack->paint(canvas, theme);
@@ -69,9 +69,9 @@ TEST(Style, AChildStyleWinsOverItsContainer) {
     bul::Theme const      theme = testTheme();
 
     auto stack = std::make_unique<bul::Stack>(bul::Stack::Direction::Vertical);
-    stack->style({.text = kRed});
+    stack->style({.color = kRed});
     auto label = std::make_unique<bul::Label>("Hello");
-    label->style({.text = kGreen});
+    label->style({.color = kGreen});
     stack->add(std::move(label));
     stack->layout({0.f, 0.f, 100.f, 9.f}, theme, canvas);
     stack->paint(canvas, theme);
@@ -85,7 +85,7 @@ TEST(Style, ColoursAButtonsSurface) {
     bul::Theme const      theme = testTheme();
 
     bul::Button button{"OK"};
-    button.style({.primary = kGreen, .primaryText = theme.panel});
+    button.style({.backgroundColor = kGreen, .color = theme.panel});
     button.layout({0.f, 0.f, 80.f, 19.f}, theme, canvas);
     button.paint(canvas, theme);
 
@@ -99,7 +99,7 @@ TEST(Style, ACheckboxUsesTheStyledAccent) {
 
     bul::Checkbox box;
     box.checked(true);
-    box.style({.accent = kGreen});
+    box.style({.accentColor = kGreen});
     box.layout({0.f, 0.f, 100.f, 11.f}, theme, canvas);
     box.paint(canvas, theme);
 

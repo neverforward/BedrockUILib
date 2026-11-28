@@ -18,7 +18,11 @@ namespace bul {
 /// and the grid always fills the rectangle it is given.
 class BUL_API Grid final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Grid"; }
+    static constexpr std::string_view kTypeName{"Grid"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] std::vector<Widget*> children() const override;
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Grid& apply(spec::Grid const& node);

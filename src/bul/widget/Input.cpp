@@ -132,7 +132,11 @@ Input& Input::emptyFileText(std::string text) {
     return *this;
 }
 
-Input::Metrics Input::metrics(Theme const& theme) const noexcept { return {kPadX, kPadY, theme.fontScale}; }
+Input::Metrics Input::metrics(Theme const& theme) const noexcept {
+    float const padX = theme.padding ? theme.padding->horizontal() / 2.f : kPadX;
+    float const padY = theme.padding ? theme.padding->vertical() / 2.f : kPadY;
+    return {padX, padY, theme.fontScale};
+}
 
 Rect Input::textArea(Metrics const& metrics) const noexcept {
     return {
@@ -239,14 +243,20 @@ void Input::paintContent(Canvas& canvas, Theme const& theme) const {
     } else {
         border = theme.inputBorder;
     }
-
-    canvas.fill(mBounds, (mHovered && !disabled()) ? theme.inputHover : theme.input, fade);
+    // The style layer wins over the field's own surfaces.
+    if (theme.border) {
+        border = *theme.border;
+    }
+    bool const lit     = mHovered && !disabled();
+    Rgba       surface = theme.background.value_or(lit ? theme.inputHover : theme.input);
+    float const radius = theme.borderRadius;
+    Widget::paintBox(canvas, mBounds, radius, surface, fade, theme.borderWidth.value_or(kBorder));
     if (mKind == Kind::File) {
         paintFile(canvas, theme, metrics, fade);
     } else {
         paintText(canvas, theme, metrics, fade);
     }
-    canvas.outline(mBounds, border.withAlpha(fade), kBorder);
+    Widget::paintBorder(canvas, mBounds, radius, border, theme.borderWidth.value_or(kBorder), fade);
 }
 
 void Input::paintText(Canvas& canvas, Theme const& theme, Metrics const& metrics, float fade) const {

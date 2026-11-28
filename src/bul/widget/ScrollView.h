@@ -21,7 +21,11 @@ namespace bul {
 /// programmatic entry points.
 class BUL_API ScrollView final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "ScrollView"; }
+    static constexpr std::string_view kTypeName{"ScrollView"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] std::vector<Widget*> children() const override;
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     ScrollView& apply(spec::ScrollView const& node);

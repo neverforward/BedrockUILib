@@ -23,7 +23,9 @@ public:
     [[nodiscard]] Variant            variant() const noexcept { return mVariant; }
     [[nodiscard]] std::string const& text() const noexcept { return mText; }
 
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Badge"; }
+    static constexpr std::string_view kTypeName{"Badge"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paintContent(Canvas&, Theme const&) const override;

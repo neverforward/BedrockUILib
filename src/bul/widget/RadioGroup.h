@@ -23,7 +23,13 @@ namespace bul {
 /// tick. Like `Checkbox`, the state is carried by the fill, not by a frame.
 class BUL_API RadioGroup final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "RadioGroup"; }
+    static constexpr std::string_view kTypeName{"RadioGroup"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] std::vector<Widget*> children() const override;
+
+    [[nodiscard]] bool state(std::string_view name) const override { return name == "disabled" ? disabled() : name == "invalid" ? invalid() : name == "read-only" ? readOnly() : Widget::state(name); }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     RadioGroup& apply(spec::RadioGroup const& node);

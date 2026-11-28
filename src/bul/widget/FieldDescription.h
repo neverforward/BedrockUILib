@@ -13,7 +13,9 @@ class BUL_API FieldDescription final : public Widget {
 public:
     explicit FieldDescription(std::string text, float scale = 0.85f);
 
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "FieldDescription"; }
+    static constexpr std::string_view kTypeName{"FieldDescription"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
 
     [[nodiscard]] Size measureContent(float availableWidth, Theme const&, Canvas const&) const override;
     void               paintContent(Canvas&, Theme const&) const override;

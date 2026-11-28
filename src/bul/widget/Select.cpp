@@ -224,11 +224,16 @@ void Select::paintContent(Canvas& canvas, Theme const& theme) const {
     } else if (mFocused || mOpen) {
         border = theme.accent;
     }
+    if (theme.border) {
+        border = *theme.border;
+    }
 
     // While the popup is open the pointer is claimed by the overlay, so the
     // trigger must not read "hovered" and light up for the whole screen.
-    bool const lit = mHovered && !mOpen && !disabled();
-    canvas.fill(mBounds, lit ? theme.inputHover : theme.input, fade);
+    bool const lit    = mHovered && !mOpen && !disabled();
+    Rgba       surface = theme.background.value_or(lit ? theme.inputHover : theme.input);
+    float const radius = theme.borderRadius;
+    Widget::paintBox(canvas, mBounds, radius, surface, fade, theme.borderWidth.value_or(kBorder));
 
     float const textX = mBounds.x + kBorder + kPadX;
     float const room  = std::max(mBounds.width - 2.f * kBorder - 2.f * kPadX - kIconWidth, 0.f);
@@ -239,7 +244,7 @@ void Select::paintContent(Canvas& canvas, Theme const& theme) const {
         {textX, mBounds.y + (mBounds.height - lineHeight) / 2.f},
         room,
         scale,
-        (empty ? theme.textMuted : theme.text).withAlpha(fade)
+        theme.color.value_or(empty ? theme.textMuted : theme.text).withAlpha(fade)
     );
 
     // Select.Icon: a small downward triangle at the right edge.
@@ -250,7 +255,7 @@ void Select::paintContent(Canvas& canvas, Theme const& theme) const {
     canvas.fill({iconX + 1.f, iconY + 1.f, kIconSize - 2.f, 1.f}, iconColor, 1.f);
     canvas.fill({iconX + 2.f, iconY + 2.f, kIconSize - 4.f, 1.f}, iconColor, 1.f);
 
-    canvas.outline(mBounds, border.withAlpha(fade), kBorder);
+    Widget::paintBorder(canvas, mBounds, radius, border, theme.borderWidth.value_or(kBorder), fade);
 }
 
 void Select::paintOverlayContent(Canvas& canvas, Theme const& theme) const {

@@ -21,7 +21,11 @@ namespace bul {
 /// appends a flexible track, so a table can be built by cells alone.
 class BUL_API Table final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Table"; }
+    static constexpr std::string_view kTypeName{"Table"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] std::vector<Widget*> children() const override;
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Table& apply(spec::Table const& node);

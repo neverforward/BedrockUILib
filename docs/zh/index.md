@@ -17,9 +17,9 @@ features:
   - title: 组件丰富
     icon: 🧩
     details: 涵盖大部分常用控件，从文字到面板，应有尽有。
-  - title: 类CSS样式表
+  - title: 样式表
     icon: 🎨
-    details: theme token 与每控件 Style，外加 CSS 风格的 StyleSheet（type / class / id 选择器）。
+    details: theme token 与每控件 Style，外加 StyleSheet（type / class / id 选择器）。
   - title: 树状结构
     icon: 🌳
     details: 手写控件树，或用 bul::spec 结构体描述整棵树交给库组装。

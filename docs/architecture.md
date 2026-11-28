@@ -14,7 +14,8 @@ src/                     pure C++, no mc/ or ll/ includes, unit tested
   bul/Canvas.h           drawing surface the model paints into (fill/outline/text)
   bul/Theme.*            colour tokens and the neutral defaults
   bul/Style.*            per-widget colour overrides
-  bul/StyleSheet.*       CSS-like rules with type, className and id selectors
+  bul/Selector.*         selectors: parsing, matching and specificity
+  bul/StyleSheet.*       rules, the cascade and the fluent builder
   bul/Layout.*           row/column, grid, table and scroll solving
   bul/TextEdit.*         the edit model: caret, selection, insert/erase
   bul/Widget.h           umbrella header for the widget kit

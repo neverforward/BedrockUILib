@@ -81,7 +81,9 @@ public:
         return *this;
     }
 
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Label"; }
+    static constexpr std::string_view kTypeName{"Label"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Label& apply(spec::Label const& node);

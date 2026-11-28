@@ -12,7 +12,8 @@ src/                     纯 C++，不 include mc/ 或 ll/，有单元测试
   bul/Canvas.h           模型绘制用的画布接口（fill/outline/text）
   bul/Theme.*            颜色 token 与中性默认值
   bul/Style.*            每控件的颜色覆盖
-  bul/StyleSheet.*       CSS 风格规则，支持 type、className、id 选择器
+  bul/Selector.*         选择器：解析、匹配、优先级
+  bul/StyleSheet.*       规则、级联与链式构造器
   bul/Layout.*           行/列、网格、表格、滚动求解
   bul/TextEdit.*         编辑模型：光标、选区、插入、删除
   bul/Widget.h           控件套件的总头文件

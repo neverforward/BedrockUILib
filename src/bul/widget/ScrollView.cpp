@@ -19,6 +19,9 @@ constexpr float kThumbMin   = 12.f;
 } // namespace
 
 ScrollView& ScrollView::content(std::unique_ptr<Widget> child) {
+    if (child) {
+        child->setParent(this);
+    }
     mContent = std::move(child);
     return *this;
 }
@@ -46,7 +49,8 @@ Size ScrollView::measureContent(float availableWidth, Theme const& theme, Canvas
 }
 
 void ScrollView::layout(Rect const& outer, Theme const& theme, Canvas const& canvas) {
-    mBounds = contentRect(outer);
+    Theme const resolved = resolvedTheme(theme);
+    mBounds              = contentRect(outer);
     if (!mContent) {
         return;
     }
@@ -193,4 +197,12 @@ ScrollView& ScrollView::apply(spec::ScrollView const& node) {
     }
     return *this;
 }
+std::vector<Widget*> ScrollView::children() const {
+    std::vector<Widget*> out;
+    if (mContent) {
+        out.push_back(mContent.get());
+    }
+    return out;
+}
+
 } // namespace bul

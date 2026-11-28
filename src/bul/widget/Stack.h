@@ -18,7 +18,11 @@ namespace bul {
 /// the rest of the row" case of an inline search field.
 class BUL_API Stack final : public Widget {
 public:
-    [[nodiscard]] std::string_view typeName() const noexcept override { return "Stack"; }
+    static constexpr std::string_view kTypeName{"Stack"};
+
+    [[nodiscard]] std::string_view typeName() const noexcept override { return kTypeName; }
+
+    [[nodiscard]] std::vector<Widget*> children() const override;
 
     /// Applies a spec node; the spec layer calls this so the mapping lives here.
     Stack& apply(spec::Stack const& node);

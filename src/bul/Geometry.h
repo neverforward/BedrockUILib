@@ -56,6 +56,20 @@ struct Insets {
 
     [[nodiscard]] constexpr float horizontal() const noexcept { return left + right; }
     [[nodiscard]] constexpr float vertical() const noexcept { return top + bottom; }
+
+    [[nodiscard]] constexpr bool empty() const noexcept {
+        return left == 0.f && top == 0.f && right == 0.f && bottom == 0.f;
+    }
+
+    /// The same amount on all four sides, like `padding: n` in a stylesheet.
+    [[nodiscard]] static constexpr Insets all(float value) noexcept { return {value, value, value, value}; }
+
+    /// `horizontal` on the left and right, `vertical` on the top and bottom.
+    [[nodiscard]] static constexpr Insets symmetric(float horizontal, float vertical) noexcept {
+        return {horizontal, vertical, horizontal, vertical};
+    }
+
+    friend constexpr bool operator==(Insets const&, Insets const&) = default;
 };
 
 } // namespace bul
